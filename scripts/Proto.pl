@@ -49,7 +49,7 @@ The name of the input file. If omitted, the standard input is used.
 
     # Connect to the database and get the command parameters.
     my ($shrub, $opt) = Shrub->new_for_script('%c %o parm1 parm2 ...', { },
-            ["input|i", "name of the input file (if not the standard input)"],
+            ["input|i=s", "name of the input file (if not the standard input)"],
             ## more command-line options here
             );
     # Open the input file.
