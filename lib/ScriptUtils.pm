@@ -106,7 +106,7 @@ sub IH {
 
     my @opt_specs = ScriptUtils::ih_options();
 
- Returns the command-line options for specifying a standard input file.
+These are the command-line options for specifying a standard input file.
 
  =over 4
 
@@ -116,6 +116,9 @@ sub IH {
  input is used.
 
  =back
+
+This method returns the specifications for these command-line options in a form
+that can be used in the L<ScriptUtils/Opts> method.
 
 =cut
 
