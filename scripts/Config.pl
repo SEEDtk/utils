@@ -115,7 +115,7 @@ L</WriteAllParams> method.
             # Denote this is Eclipse mode.
             $eclipseMode = 1;
             # Activate the include directory for the "Env" module.
-            unshift @INC, "$base_dir/kernel/lib";
+            unshift @INC, "$base_dir/utils/lib";
         }
     }
     # Load the environment library.
