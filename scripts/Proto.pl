@@ -33,14 +33,11 @@ This is a prototype template for a database script.
 
 ## describe positional parameters
 
-The command-line options are those found in L<Shrub/new_for_script> plus
-the following.
+The command-line options are those found in L<Shrub/new_for_script> and
+L<ScriptUtils::ih_options> plus the following.
 
 =over 4
 
-=item input
-
-The name of the input file. If omitted, the standard input is used.
 
 ## more command-line options
 
@@ -48,11 +45,13 @@ The name of the input file. If omitted, the standard input is used.
 
 =cut
 
-    # Connect to the database and get the command parameters.
-    my ($shrub, $opt) = Shrub->new_for_script('%c %o parm1 parm2 ...', { },
-            ["input|i=s", "name of the input file (if not the standard input)"],
-            ## more command-line options here
+    # Get the command-line parameters.
+    my $opt = ScriptUtils::Opts('parm1 parm2 ...', Shrub::script_options(),
+            Shrub::ih_options(),
+            ## more command-line options
             );
+    # Connect to the database.
+    my $shrub = Shrub->new_for_script($opt);
     # Open the input file.
     my $ih = ScriptUtils::IH($opt->input);
 
