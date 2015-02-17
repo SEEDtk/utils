@@ -266,7 +266,7 @@ L</WriteAllParams> method.
     # If this is Unix mode, we need to create the pull-all script.
     if (! $eclipseMode) {
         my $fileName = "$projDir/pull-all.sh";
-        open(my $oh, $fileName) || die "Could not open $fileName: $!";
+        open(my $oh, ">$fileName") || die "Could not open $fileName: $!";
         print $oh "echo Pulling project directory.\n";
         print $oh "pushd $projDir\n";
         print $oh "git pull\n";
