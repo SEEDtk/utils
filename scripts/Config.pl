@@ -227,24 +227,28 @@ L</WriteAllParams> method.
         print "Reading back new configuration.\n";
         RunFigConfig($outputName);
     }
-    # Create the web configuration file
-    my $webConfig = "$FIG_Config::web_dir/lib/Web_Config.pm";
-    # Open the web configuration file for output.
-    if (! open(my $oh, ">$webConfig")) {
-        # Web system problems are considered warnings, not fatal errors.
-        warn "Could not open web configuration file $webConfig: $!\n";
-    } else {
-        # Write the file.
-        print $oh "\n";
-        print $oh "    use lib\n";
-        print $oh "        '" .	join("',\n        '", @FIG_Config::libs) . "';\n";
-        print $oh "\n";
-        print $oh "    use FIG_Config;\n";
-        print $oh "\n";
-        print $oh "1;\n";
-        # Close the file.
-        close $oh;
-        print "Web configuration file $webConfig created.\n";
+    # Do we have a Web project?
+    my $weblib = "$FIG_Config::web_dir/lib";
+    if (-d $weblib) {
+        # Yes. Create the web configuration file.
+        my $webConfig = "$weblib/Web_Config.pm";
+        # Open the web configuration file for output.
+        if (! open(my $oh, ">$webConfig")) {
+            # Web system problems are considered warnings, not fatal errors.
+            warn "Could not open web configuration file $webConfig: $!\n";
+        } else {
+            # Write the file.
+            print $oh "\n";
+            print $oh "    use lib\n";
+            print $oh "        '" .	join("',\n        '", @FIG_Config::libs) . "';\n";
+            print $oh "\n";
+            print $oh "    use FIG_Config;\n";
+            print $oh "\n";
+            print $oh "1;\n";
+            # Close the file.
+            close $oh;
+            print "Web configuration file $webConfig created.\n";
+        }
     }
     # If this is Eclipse mode, we need to set up the PERL libraries and
     # execution paths.
