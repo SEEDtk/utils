@@ -107,8 +107,8 @@ L</WriteAllParams> method.
         # Fix Windows slash craziness.
         $base_dir =~ tr/\\/\//;
         # Chop off the project part of the path.
-        unless ($base_dir =~ /(.+)\/kernel\/scripts$/) {
-            die "Directory structure is incompatible with Eclipse setup. Project must be named \"kernel\".";
+        unless ($base_dir =~ /(.+)\/utils\/scripts$/) {
+            die "Directory structure is incompatible with Eclipse setup. Project must be named \"utils\".";
         } else {
             # Save the base directory.
             $base_dir = $1;
@@ -735,7 +735,7 @@ The command-line options from the configuration script.
 
 =cut
 
-sub SetupCGIes {
+sub SetupCGIs {
     # Get the parameters.
     my ($webdir, $opt) = @_;
     # Only proceed if we have a web directory.
@@ -753,5 +753,6 @@ sub SetupCGIes {
             my $newMode = ($finfo[2] & 0777) | 0111;
             chmod $newMode, $fileName;
         }
+        print "CGI permissions set.\n";
     }
 }
