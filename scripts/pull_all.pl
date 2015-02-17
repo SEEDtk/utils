@@ -44,6 +44,7 @@ if (! -d "$projDir/modules/kernel") {
 my @git = qw(git pull);
 # Change to the project directory.
 chdir $projDir;
+print "Processing project directory.\n";
 my $rc = system(@git);
 if ($rc) {
     die "Pull for project directory failed. rc = $rc";
@@ -52,6 +53,7 @@ if ($rc) {
 for my $module (@FIG_Config::modules) {
     # Go to this module's directory.
     chdir "$projDir/$module";
+    print "Processing module $module.\n";
     # Pull the source from GIT.
     $rc = system(@git);
     if ($rc) {
