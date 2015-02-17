@@ -267,14 +267,15 @@ L</WriteAllParams> method.
     if (! $eclipseMode) {
         my $fileName = "$projDir/pull-all.sh";
         open(my $oh, $fileName) || die "Could not open $fileName: $!";
-        print "echo Pulling project directory.\n";
-        print "cd $projDir\n";
-        print "git pull\n";
+        print $oh "echo Pulling project directory.\n";
+        print $oh "pushd $projDir\n";
+        print $oh "git pull\n";
         for my $module (@FIG_Config::modules) {
-            print "echo Pulling $module\n";
-            print "cd $modules{$module}\n";
-            print "git pull\n";
+            print $oh "echo Pulling $module\n";
+            print $oh "cd $modules{$module}\n";
+            print $oh "git pull\n";
         }
+        print $oh "popd\n";
         close $oh;
         print "Pull-all script written to $fileName.\n";
     }
