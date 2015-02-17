@@ -46,7 +46,7 @@ my @git = qw(git pull);
 chdir $projDir;
 my $rc = system(@git);
 if (! $rc) {
-    die "Pull for project directory failed.";
+    die "Pull for project directory failed. rc = $rc";
 }
 # Loop through the modules.
 for my $module (@FIG_Config::modules) {
@@ -55,6 +55,6 @@ for my $module (@FIG_Config::modules) {
     # Pull the source from GIT.
     $rc = system(@git);
     if (! $rc) {
-        die "Pull for module $module failed."
+        die "Pull for module $module failed. rc = $rc"
     }
 }
