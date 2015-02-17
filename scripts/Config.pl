@@ -263,6 +263,21 @@ L</WriteAllParams> method.
             SetupCGIs($FIG_Config::web_dir, $opt);
         }
     }
+    # If this is Unix mode, we need to create the pull-all script.
+    if (! $eclipseMode) {
+        my $fileName = "$projDir/pull-all.sh";
+        open(my $oh, $fileName) || die "Could not open $fileName: $!";
+        print "echo Pulling project directory.\n";
+        print "cd $projDir\n";
+        print "git pull\n";
+        for my $module (@FIG_Config::modules) {
+            print "echo Pulling $module\n";
+            print "cd $modules{$module}\n";
+            print "git pull\n";
+        }
+        close $oh;
+        print "Pull-all script written to $fileName.\n";
+    }
     # Finally, check for the links file.
     if ($opt->links) {
         # Determine the output location for the links file.
