@@ -44,8 +44,15 @@ The command-line options are as follows:
 
 =item mac
 
-If this is a mac, the location of the main Apache configuration file. This is usually
-C</private/etc/apache2/httpd.conf>.
+The location of the main Apache configuration file. This is usually
+C</private/etc/apache2/httpd.conf> on a Mac (which is whenre this option
+is most often required). Use this option if virtual hosting or CGI scripting
+is not configured yet in your Apache instance.
+
+=item clear
+
+Do not preserve any existing information from VHOSTS. This is necessary the first
+time you use this script on a Mac.
 
 =back
 
@@ -57,7 +64,8 @@ longer a part of L<Config.pl>).
     $| = 1; # Prevent buffering on STDOUT.
     # Get the command-line options.
     my ($opt, $usage) = describe_options('%o %c vhostsFile',
-            ['mac=s', 'main Apache configuration file (if this is a Mac)']);
+            ['mac=s', 'main Apache configuration file'],
+            ['clear|c', 'completely replace existing vhost file']);
     my $fileName = $ARGV[0];
     if (! $fileName) {
         die "The VHOSTS file name is required.";
@@ -66,8 +74,8 @@ longer a part of L<Config.pl>).
     my $winMode = ($^O =~ /Win/ ? 1 : 0);
     # We'll put the file lines in here, omitting any existing SEEDtk section.
     my @lines;
-    # Set up the VHOSTS file. Is there a previous copy?
-    if (-f $fileName) {
+    # Set up the VHOSTS file. Is there a previous copy we want to keep?
+    if (-f $fileName && ! $opt->clear) {
         # Open the configuration file for input.
         open(my $ih, "<$fileName") || die "Could not open configuration file $fileName: $!";
         my $skipping;
