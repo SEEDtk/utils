@@ -4,7 +4,6 @@ This file contains Bruce's current to-do list.
 
 =cut
 
-    ## TODO modify DBD to include new subsystem structure (including subsystem IDs)
     ## TODO import make_release.pl to the SEEDtk projects
     ## TODO create a repository for a small sample database
     ## TODO update make_releases to create repositories

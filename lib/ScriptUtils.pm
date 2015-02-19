@@ -108,14 +108,14 @@ sub IH {
 
 These are the command-line options for specifying a standard input file.
 
- =over 4
+=over 4
 
- =item input
+=item input
 
- Name of the main input file. If omitted and an input file is required, the standard
- input is used.
+Name of the main input file. If omitted and an input file is required, the standard
+input is used.
 
- =back
+=back
 
 This method returns the specifications for these command-line options in a form
 that can be used in the L<ScriptUtils/Opts> method.
