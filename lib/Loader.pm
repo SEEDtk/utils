@@ -81,7 +81,7 @@ sub stats {
 
     my @files = Loader::OpenDir($dirName, $filtered, $flag);
 
- or
+or
 
      my @files = $loader->OpenDir($dirName, $filtered, $flag);
 
