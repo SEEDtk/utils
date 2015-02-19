@@ -98,11 +98,15 @@ The default data directory structure includes two main folders.
 
 The default holding place for data to be loaded into the database. Genome
 directories are stored in C<Inputs/GenomeData> and subsystem directories in
-C<Inputs/SubSystemData>.
+C<Inputs/SubSystemData>. The formats of these directories are discussed
+in L<ExchangeFormat>.
 
 =item LoadFiles
 
-The storage directory for the files used to load the database.
+The storage directory for the files used to load the database. This is
+very much a temporary work directory; however, the files are kept after
+loading (rather than being created and deleted as true temporary
+files) for error recovery and analysis purposes.
 
 =back
 
@@ -434,7 +438,7 @@ C<eclipse>. Create a new run configuration with just this arguments in it so you
 You can't install L<GD> using CPAN. Instead, you must install libgd. Use the commands below in
 a terminal window
 
-    curl -O http://wangqinhu.com/data/gd/gd.tar.gz
+    curl -O http://wangqinhu.com/data/gd/gd.tar.gz >gd.tar.gz
     tar -zxf gd.tar.gz
     cd gd
     sudo ./install
