@@ -33,11 +33,10 @@ This is a prototype template for a database script.
 
 ## describe positional parameters
 
-The command-line options are those found in L<Shrub/new_for_script> and
-L<ScriptUtils::ih_options> plus the following.
+The command-line options are those found in L<Shrub/script_options> and
+L<ScriptUtils/ih_options> plus the following.
 
 =over 4
-
 
 ## more command-line options
 
@@ -47,7 +46,7 @@ L<ScriptUtils::ih_options> plus the following.
 
     # Get the command-line parameters.
     my $opt = ScriptUtils::Opts('parm1 parm2 ...', Shrub::script_options(),
-            Shrub::ih_options(),
+            ScriptUtils::ih_options(),
             ## more command-line options
             );
     # Connect to the database.
