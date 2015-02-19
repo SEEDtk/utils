@@ -122,14 +122,14 @@ The input file should contain a list of subsystem names, one per line, followed 
             $stats->Add(orgNotFound => 1);
         } else {
             # Now we want to copy the genome directory. We purposefully skip over
-            # scenarios, which requires we look at the directory children ourselves.
+            # scenarios and models, which requires we look at the directory children ourselves.
             my $outOrgDir = "$outOrgDisk/$genome";
             print "Copying $genome.\n";
             if (! -d $outOrgDir) {
                 File::Copy::Recursive::pathmk($outOrgDir);
             }
             # Get the genome components.
-            my @children = grep { substr($_,0,1) ne '.' && $_ ne 'Scenarios' } Loader::OpenDir($orgDir);
+            my @children = grep { substr($_,0,1) ne '.' && $_ ne 'Scenarios' && $_ ne 'Models'} Loader::OpenDir($orgDir);
             # Loop through them, copying.
             for my $child (@children) {
                 my $fileCount = File::Copy::Recursive::rcopy("$orgDir/$child", "$outOrgDir/$child");
