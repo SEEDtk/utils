@@ -131,7 +131,7 @@ The web site requires a great deal of setup, so its use is entirely optional; ho
 it provides the benefits of easy access to the POD documentation and configuration
 data.
 
-=head3 SEEDTK CODE Facility
+=head3 SEEDTK Documentation Facility
 
 The main page has a list of search boxes including one labeled C<SEEDTK CODE>.
 Type the name of a perl module in this box, or the name of a script (including

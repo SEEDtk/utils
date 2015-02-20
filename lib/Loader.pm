@@ -152,20 +152,20 @@ sub OpenDir {
 
 =head3 GetNamesFromFile
 
-    my $names = $loader->GetNamesFromFile($fileName, $type);
+    my $names = $loader->GetNamesFromFile($type => $fileName);
 
 Read the names or IDs found in the first column of the specified tab-delimited file.
 
 =over 4
 
-=item fileName
-
-Name of the file to read.
-
 =item type
 
 The type of name found in the file. This must be a singular noun and will be used in error messages and
 statistics.
+
+=item fileName
+
+Name of the file to read.
 
 =item RETURN
 
@@ -177,7 +177,7 @@ Returns a reference to a list of names taken from the first column of each recor
 
 sub GetNamesFromFile {
     # Get the parameters.
-    my ($self, $fileName, $type) = @_;
+    my ($self, $type, $fileName) = @_;
     # Get the statistics object.
     my $stats = $self->{stats};
     # Open the file for input.
@@ -201,19 +201,19 @@ sub GetNamesFromFile {
 
 =head3 OpenFasta
 
-    my $fh = $loader->OpenFasta($fileName, $type);
+    my $fh = $loader->OpenFasta($type => $fileName);
 
 Open a FASTA file for input. This returns an object that can be passed to L</GetLine> as a file handle.
 
 =over 4
 
-=item fileName
-
-Name of the FASTA file to open.
-
 =item type
 
 Type of sequence in the file. This must be a singular noun, and will be used in error messages and statistics.
+
+=item fileName
+
+Name of the FASTA file to open.
 
 =item RETURN
 
@@ -226,7 +226,7 @@ that can be passed to L</GetLine> to read from the FASTA.
 
 sub OpenFasta {
     # Get the parameters.
-    my ($self, $fileName, $type) = @_;
+    my ($self, $type, $fileName) = @_;
     # Get the statistics object.
     my $stats = $self->{stats};
     # Open the file for input.
@@ -253,20 +253,20 @@ sub OpenFasta {
 
 =head3 OpenFile
 
-    my $ih = $loader->OpenFile($fileName, $type);
+    my $ih = $loader->OpenFile($type => $fileName);
 
 Open the specified file for input. If the file does not open, an error will be thrown.
 
 =over 4
 
-=item fileName
-
-Name of the file to open.
-
 =item type
 
 The type of record found in the file. This must be a singular noun, and will be used in error messages and
 statistics.
+
+=item fileName
+
+Name of the file to open.
 
 =item RETURN
 
@@ -278,7 +278,7 @@ Returns an open file handle.
 
 sub OpenFile {
     # Get the parameters.
-    my ($self, $fileName, $type) = @_;
+    my ($self, $type, $fileName) = @_;
     # Get the statistics object.
     my $stats = $self->{stats};
     # Open the file for input.
@@ -290,20 +290,20 @@ sub OpenFile {
 
 =head3 GetLine
 
-    my $fields = $loader->GetLine($ih, $type);
+    my $fields = $loader->GetLine($type => $ih);
 
 Read a line of data from an open tab-delimited or FASTA file.
 
 =over 4
 
-=item ih
-
-Open input handle for the file or a FASTA object returned from L</OpenFasta>.
-
 =item type
 
 The type of record found in the file. This must be a singular noun, and will be used in error messages and
 statistics.
+
+=item ih
+
+Open input handle for the file or a FASTA object returned from L</OpenFasta>.
 
 =item RETURN
 
@@ -316,7 +316,7 @@ if end-of-file was read.
 
 sub GetLine {
     # Get the parameters.
-    my ($self, $ih, $type) = @_;
+    my ($self, $type, $ih) = @_;
     # Get the statistics object.
     my $stats = $self->{stats};
     # The fields read will be put in here.
@@ -370,6 +370,47 @@ sub GetLine {
     # Return the line.
     return $retVal;
 }
+
+=head3 PutLine
+
+    $loader->PutLine($type => $oh, @fields);
+
+Write a tab-delimited line to an output file.
+
+=over 4
+
+=item type
+
+Type of data being written, for statistical tracking.
+
+=item $oh
+
+Open output file handle. If C<undef>, then the write will be suppressed.
+
+=item @fields
+
+List of fields to write to the output.
+
+=back
+
+=cut
+
+sub PutLine {
+    # Get the parameters.
+    my ($self, $type, $oh, @fields) = @_;
+    # Get the statistics object.
+    my $stats = $self->stats;
+    # Are we writing?
+    if (! defined $oh) {
+        # No. Skip the line.
+        $stats->Add("$type-line-suppressed" => 1);
+    } else {
+        # Yes. Write the line.
+        print $oh join("\t", @fields) . "\n";
+        $stats->Add("$type-line-out" => 1);
+    }
+}
+
 
 =head3 ReadMetaData
 
@@ -481,7 +522,35 @@ sub WriteMetaData {
     close $oh;
 }
 
+=head3 WriteBlank
 
-## method documentation and code
+    $loader->WriteBlank($type => $fileName);
+
+Create an empty file.
+
+=over 4
+
+=item type
+
+The type of file, used in statistics and error messages.
+
+=item fileName
+
+The name of the blank file to create.
+
+=back
+
+=cut
+
+sub WriteBlank {
+    # Get the parameters.
+    my ($self, $type, $fileName) = @_;
+    # Open the file for output.
+    open(my $oh, ">$fileName") || die "Could not create $type output file: $!";
+    # Blank and close the file.
+    print $oh "";
+    close $oh;
+    $self->stats->Add('blank-$type-created' => 1);
+}
 
 1;
