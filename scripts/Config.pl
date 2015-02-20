@@ -177,16 +177,6 @@ L</WriteAllParams> method.
         } elsif (! -d $dataRootDir) {
             die "The specified data root directory $dataRootDir was not found.";
         }
-        # Are we setting up default data directories?
-        if ($opt->dirs) {
-            # Yes. Insure we have the data paths.
-            BuildPaths($winMode, Data => $dataRootDir, qw(Inputs Inputs/GenomeData Inputs/SubSystemData LoadFiles));
-            # Are we using a local DNA repository?
-            if (! $opt->dna) {
-                # Yes. Build that, too.
-                BuildPaths($winMode, Data => $dataRootDir, qw(DnaRepo));
-            }
-        }
     }
     # Make sure we have the web directory if there is no web root in
     # the command-line parameters.
@@ -196,11 +186,6 @@ L</WriteAllParams> method.
             die "A web root directory is required if no current value exists in FIG_Config.";
         } elsif (! -d $webRootDir) {
             die "The specified web root directory $webRootDir was not found.";
-        }
-        # Are we setting up default web directories?
-        if ($opt->dirs) {
-            # Yes. Insure we have the web paths.
-            BuildPaths($winMode, Web => $webRootDir, qw(img Tmp logs));
         }
     }
     #If the FIG_Config write has NOT been turned off, then write the FIG_Config.
@@ -226,6 +211,18 @@ L</WriteAllParams> method.
         # Execute it to get the latest variable values.
         print "Reading back new configuration.\n";
         RunFigConfig($outputName);
+    }
+    # Are we setting up default data directories?
+    if ($opt->dirs) {
+        # Yes. Insure we have the data paths.
+        BuildPaths($winMode, Data => $FIG_Config::shrub_dir, qw(Inputs Inputs/GenomeData Inputs/SubSystemData LoadFiles));
+        # Are we using a local DNA repository?
+        if (! $opt->dna) {
+            # Yes. Build that, too.
+            BuildPaths($winMode, Data => $FIG_Config::shrub_dir, qw(DnaRepo));
+        }
+        # Insure we have the web paths.
+        BuildPaths($winMode, Web => $FIG_Config::web_dir, qw(img Tmp logs));
     }
     # Do we have a Web project?
     my $weblib = "$FIG_Config::web_dir/lib";
