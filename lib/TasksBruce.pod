@@ -8,3 +8,5 @@ This file contains Bruce's current to-do list.
     ## TODO create a repository for a small sample database
     ## TODO update make_releases to create repositories
     ## TODO Load Terry's new data into a database
+    ## TODO determine how to factor Shrub -- one object with everything, or many sub-objects with different functional areas
+    ## TODO common way to handle pipeline scripts

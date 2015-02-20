@@ -452,7 +452,7 @@ sub ReadMetaData {
     # Get the statistics object.
     my $stats = $self->{stats};
     # Open the file for input.
-    my $ih = $self->OpenFile($fileName, 'metadata');
+    my $ih = $self->OpenFile(metadata => $fileName);
     # Read each line and parse into the return hash.
     my %retVal;
     while (! eof $ih) {
