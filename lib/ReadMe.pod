@@ -135,7 +135,12 @@ data.
 
 The main page has a list of search boxes including one labeled C<SEEDTK CODE>.
 Type the name of a perl module in this box, or the name of a script (including
-the C<.pl> suffix) to see the relevant POD documentation.
+the C<.pl> suffix) to see the relevant POD documentation. You can also type
+"C<perl >I<name>" to see the perldoc web page for the function I<name>. Thus,
+
+    perl split
+
+will display the documentation page for the C<split> function.
 
 The buttons below the box have the following functions.
 
