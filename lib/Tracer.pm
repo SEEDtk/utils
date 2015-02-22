@@ -23,8 +23,8 @@ package Tracer;
     use FIG_Config;
     use base qw(Exporter);
     use vars qw(@EXPORT @EXPORT_OK);
-    @EXPORT = qw(Trace T TSetup QTrace Confess MemTrace Cluck Min Max Assert Open OpenDir TICK EmergencyKey ETracing Constrain Insure ChDir Emergency Warn TraceDump IDHASH);
-    @EXPORT_OK = qw(GetFile MergeOptions ParseRecord UnEscape Escape PrintLine PutLine);
+    @EXPORT = qw(Confess Cluck Min Max Assert Open OpenDir TICK Constrain Insure ChDirWarn IDHASH);
+    @EXPORT_OK = qw(GetFile ParseRecord UnEscape Escape PrintLine PutLine);
     use Carp qw(longmess croak carp confess);
     use CGI;
     use Cwd;
@@ -54,291 +54,8 @@ package Tracer;
         }
     }
 
-=head1 Tracing and Debugging Helpers
+=head1 Debugging Helpers
 
-=head2 Tracing
-
-This package provides simple tracing for debugging and reporting purposes. To use it simply call the
-L</TSetup> or L</ETracing> method to set the options and call L</Trace> to write out trace messages.
-L</TSetup> and L</ETracing> both establish a I<trace level> and a list of I<categories>. Similarly,
-each trace message has a I<trace level> and I<category> associated with it. Only messages whose trace
-level is less than or equal to the setup trace level and whose category is activated will
-be written. Thus, a higher trace level on a message indicates that the message
-is less likely to be seen, while a higher trace level passed to B<TSetup> means more trace messages will
-appear.
-
-=head3 Putting Trace Messages in Your Code
-
-To generate a trace message, use the following syntax.
-
-    Trace($message) if T(errors => 4);
-
-This statement will produce a trace message if the trace level is 4 or more and the C<errors>
-category is active. There is a special category C<main> that is always active, so
-
-    Trace($message) if T(main => 4);
-
-will trace if the trace level is 4 or more.
-
-If the category name is the same as the package name, all you need is the number. So, if the
-following call is made in the B<Sprout> package, it will appear if the C<Sprout> category is
-active and the trace level is 2 or more.
-
-    Trace($message) if T(2);
-
-In scripts, where no package name is available, the category defaults to C<main>.
-
-=head3 Custom Tracing
-
-Many programs have customized tracing configured using the L</TSetup> method. This is no longer
-the preferred method, but a knowledge of how custom tracing works can make the more modern
-L</Emergency Tracing> easier to understand.
-
-To set up custom tracing, you call the L</TSetup> method. The method takes as input a trace level,
-a list of category names, and a destination. The trace level and list of category names are
-specified as a space-delimited string. Thus
-
-    TSetup('3 errors Sprout ERDB', 'TEXT');
-
-sets the trace level to 3, activates the C<errors>, C<Sprout>, and C<ERDB> categories, and
-specifies that messages should be sent to the standard output.
-
-To turn on tracing for ALL categories, use an asterisk. The call below sets every category to
-level 3 and writes the output to the standard error output. This sort of thing might be
-useful in a CGI environment.
-
-    TSetup('3 *', 'WARN');
-
-In addition standard error and file output for trace messages, you can specify that the trace messages
-be queued. The messages can then be retrieved by calling the L</QTrace> method. This approach
-is useful if you are building a web page. Instead of having the trace messages interspersed with
-the page output, they can be gathered together and displayed at the end of the page. This makes
-it easier to debug page formatting problems.
-
-Finally, you can specify that all trace messages be emitted to a file, or the standard output and
-a file at the same time. To trace to a file, specify the filename with an output character in front
-of it.
-
-    TSetup('4 SQL', ">$fileName");
-
-To trace to the standard output and a file at the same time, put a C<+> in front of the angle
-bracket.
-
-    TSetup('3 *', "+>$fileName");
-
-The flexibility of tracing makes it superior to simple use of directives like C<die> and C<warn>.
-Tracer calls can be left in the code with minimal overhead and then turned on only when needed.
-Thus, debugging information is available and easily retrieved even when the application is
-being used out in the field.
-
-=head3 Trace Levels
-
-There is no hard and fast rule on how to use trace levels. The following is therefore only
-a suggestion.
-
-=over 4
-
-=item Error 0
-
-Message indicates an error that may lead to incorrect results or that has stopped the
-application entirely.
-
-=item Warning 1
-
-Message indicates something that is unexpected but that probably did not interfere
-with program execution.
-
-=item Notice 2
-
-Message indicates the beginning or end of a major task.
-
-=item Information 3
-
-Message indicates a subtask. In the FIG system, a subtask generally relates to a single
-genome. This would be a big loop that is not expected to execute more than 500 times or so.
-
-=item Detail 4
-
-Message indicates a low-level loop iteration.
-
-=back
-
-The format of trace messages is important because some utilities analyze trace files.
-There are three fields-- the time stamp, the category name, and the text.
-The time stamp is between square brackets and the category name between angle brackets.
-After the category name there is a colon (C<:>) followed by the message text.
-If the square brackets or angle brackets are missing, then the trace management
-utilities assume that they are encountering a set of pre-formatted lines.
-
-Note, however, that this formatting is done automatically by the tracing functions. You
-only need to know about it if you want to parse a trace file.
-
-=head3 Emergency Tracing
-
-Sometimes, you need a way for tracing to happen automatically without putting parameters
-in a form or on the command line. Emergency tracing does this. You invoke emergency tracing
-from the debug form, which is accessed from the [[DebugConsole]]. Emergency tracing requires
-that you specify a tracing key. For command-line tools, the key is
-taken from the C<TRACING> environment variable. For web services, the key is taken from
-a cookie. Either way, the key tells the tracing facility who you are, so that you control
-the tracing in your environment without stepping on other users.
-
-The key can be anything you want. If you don't have a key, the C<SetPassword> page will
-generate one for you.
-
-You can activate and de-activate emergency tracing from the debugging control panel, as
-well as display the trace file itself.
-
-To enable emergency tracing in your code, call
-
-    ETracing($cgi)
-
-from a web script and
-
-    ETracing()
-
-from a command-line script.
-
-The web script will look for the tracing key in the cookies, and the command-line
-script will look for it in the C<TRACING> environment variable. If you are
-using the L</StandardSetup> method or a [[WebApplication]], emergency tracing
-will be configured automatically.
-
-=cut
-
-# Declare the configuration variables.
-
-my $Destination = "WARN";   # Description of where to send the trace output.
-my $TeeFlag = 0;            # TRUE if output is going to a file and to the
-                            # standard output
-my %Categories = ( main => 1 );
-                            # hash of active category names
-my @LevelNames = qw(error warn notice info detail);
-my $TraceLevel = 0;         # trace level; a higher trace level produces more
-                            # messages
-my @Queue = ();             # queued list of trace messages.
-my $LastCategory = "main";  # name of the last category interrogated
-my $LastLevel = 0;          # level of the last test call
-my $SetupCount = 0;         # number of times TSetup called
-my $AllTrace = 0;           # TRUE if we are tracing all categories.
-my $SavedCGI;               # CGI object passed to ETracing
-my $CommandLine;            # Command line passed to StandardSetup
-my $Confessions = 0;        # confession count
-umask 2;                    # Fix the damn umask so everything is group-writable.
-
-=head2 Tracing Methods
-
-=head3 Setups
-
-    my $count = Tracer::Setups();
-
-Return the number of times L</TSetup> has been called.
-
-This method allows for the creation of conditional tracing setups where, for example, we
-may want to set up tracing if nobody else has done it before us.
-
-=cut
-
-sub Setups {
-    return $SetupCount;
-}
-
-=head3 TSetup
-
-    TSetup($categoryList, $target);
-
-This method is used to specify the trace options. The options are stored as package data
-and interrogated by the L</Trace> and L</T> methods.
-
-=over 4
-
-=item categoryList
-
-A string specifying the trace level and the categories to be traced, separated by spaces.
-The trace level must come first.
-
-=item target
-
-The destination for the trace output. To send the trace output to a file, specify the file
-name preceded by a ">" symbol. If a double symbol is used (">>"), then the data is appended
-to the file. Otherwise the file is cleared before tracing begins. Precede the first ">"
-symbol with a C<+> to echo output to a file AND to the standard output. In addition to
-sending the trace messages to a file, you can specify a special destination. C<HTML> will
-cause tracing to the standard output with each line formatted as an HTML paragraph. C<TEXT>
-will cause tracing to the standard output as ordinary text. C<ERROR> will cause trace
-messages to be sent to the standard error output as ordinary text. C<QUEUE> will cause trace
-messages to be stored in a queue for later retrieval by the L</QTrace> method. C<WARN> will
-cause trace messages to be emitted as warnings using the B<warn> directive.  C<NONE> will
-cause tracing to be suppressed.
-
-=back
-
-=cut
-
-sub TSetup {
-    # Get the parameters.
-    my ($categoryList, $target) = @_;
-    # Parse the category list.
-    my @categoryData = split m/\s+/, $categoryList;
-    # Extract the trace level.
-    $TraceLevel = shift @categoryData;
-    # Presume category-based tracing until we learn otherwise.
-    $AllTrace = 0;
-    # Build the category hash. Note that if we find a "*", we turn on non-category
-    # tracing. We must also clear away any pre-existing data.
-    %Categories = ( main => 1 );
-    for my $category (@categoryData) {
-        if ($category eq '*') {
-            $AllTrace = 1;
-        } else {
-            $Categories{lc $category} = 1;
-        }
-    }
-    # Now we need to process the destination information. The most important special
-    # case is when we're writing to a file. This is indicated by ">" (overwrite) and
-    # ">>" (append). A leading "+" for either indicates that we are also writing to
-    # the standard output (tee mode).
-    if ($target =~ m/^\+?>>?/) {
-        if ($target =~ m/^\+/) {
-            $TeeFlag = 1;
-            $target = substr($target, 1);
-        }
-        if ($target =~ m/^>[^>]/) {
-            # We need to initialize the file (which clears it).
-            open TRACEFILE, $target;
-            print TRACEFILE "[" . Now() . "] [notice] [Tracer] Tracing initialized.\n";
-            close TRACEFILE;
-            # Set to append mode now that the file has been cleared.
-            $Destination = ">$target";
-        } else {
-            $Destination = $target;
-        }
-    } else {
-        $Destination = uc($target);
-    }
-    # Increment the setup counter.
-    $SetupCount++;
-}
-
-=head3 SetLevel
-
-    Tracer::SetLevel($newLevel);
-
-Modify the trace level. A higher trace level will cause more messages to appear.
-
-=over 4
-
-=item newLevel
-
-Proposed new trace level.
-
-=back
-
-=cut
-
-sub SetLevel {
-    $TraceLevel = $_[0];
-}
 
 =head3 ParseDate
 
@@ -450,224 +167,6 @@ sub LogErrors {
     open STDERR, '>', $fileName;
 }
 
-=head3 Trace
-
-    Trace($message);
-
-Write a trace message to the target location specified in L</TSetup>. If there has not been
-any prior call to B<TSetup>.
-
-=over 4
-
-=item message
-
-Message to write.
-
-=back
-
-=cut
-
-sub Trace {
-    # Get the parameters.
-    my ($message) = @_;
-    # Strip off any line terminators at the end of the message. We will add
-    # new-line stuff ourselves.
-    my $stripped = Strip($message);
-    # Compute the caller information.
-    my ($callPackage, $callFile, $callLine) = caller();
-    my $callFileTitle = basename($callFile);
-    # Check the caller.
-    my $callerInfo = ($callFileTitle ne "Tracer.pm" ? " [$callFileTitle $callLine]" : "");
-    # Get the timestamp.
-    my $timeStamp = Now();
-    # Build the prefix.
-    my $level = $LevelNames[$LastLevel] || "($LastLevel)";
-    my $prefix = "[$timeStamp] [$level] [$LastCategory]$callerInfo";
-    # Format the message.
-    my $formatted = "$prefix $stripped";
-    # Process according to the destination.
-    if ($Destination eq "TEXT") {
-        # Write the message to the standard output.
-        print "$formatted\n";
-    } elsif ($Destination eq "ERROR") {
-        # Write the message to the error output. Here, we want our prefix fields.
-        print STDERR "$formatted\n";
-    } elsif ($Destination eq "WARN") {
-        # Emit the message to the standard error output. It is presumed that the
-        # error logger will add its own prefix fields, the notable exception being
-        # the caller info.
-        print STDERR "$callerInfo$stripped\n";
-    } elsif ($Destination eq "QUEUE") {
-        # Push the message into the queue.
-        push @Queue, "$formatted";
-    } elsif ($Destination eq "HTML") {
-        # Convert the message to HTML.
-        my $escapedMessage = CGI::escapeHTML($stripped);
-        # The stuff after the first line feed should be pre-formatted.
-        my @lines = split m/\s*\n/, $escapedMessage;
-        # Get the normal portion.
-        my $line1 = shift @lines;
-        print "<p>$timeStamp $LastCategory $LastLevel: $line1</p>\n";
-        if (@lines) {
-            print "<pre>" . join("\n", @lines, "</pre>");
-        }
-    } elsif ($Destination =~ m/^>>/) {
-        # Write the trace message to an output file.
-        open(TRACING, $Destination) || confess("Tracing open for \"$Destination\" failed: $!");
-        # Lock the file.
-        flock TRACING, LOCK_EX;
-        print TRACING "$formatted\n";
-        close TRACING;
-        # If the Tee flag is on, echo it to the standard output.
-        if ($TeeFlag) {
-            print "$formatted\n";
-        }
-    }
-}
-
-=head3 TraceDump
-
-    TraceDump($title, $object);
-
-Dump an object to the trace log. This method simply calls the C<Dumper>
-function, but routes the output to the trace log instead of returning it
-as a string. The output is arranged so that it comes out monospaced when
-it appears in an HTML trace dump.
-
-=over 4
-
-=item title
-
-Title to give to the object being dumped.
-
-=item object
-
-Reference to a list, hash, or object to dump.
-
-=back
-
-=cut
-
-sub TraceDump {
-    # Get the parameters.
-    my ($title, $object) = @_;
-    # Trace the object.
-    Trace("Object dump for $title:\n" . Dumper($object));
-}
-
-=head3 T
-
-    my $switch = T($category, $traceLevel);
-
-    or
-
-    my $switch = T($traceLevel);
-
-Return TRUE if the trace level is at or above a specified value and the specified category
-is active, else FALSE. If no category is specified, the caller's package name is used.
-
-=over 4
-
-=item category
-
-Category to which the message belongs. If not specified, the caller's package name is
-used.
-
-=item traceLevel
-
-Relevant tracing level.
-
-=item RETURN
-
-TRUE if a message at the specified trace level would appear in the trace, else FALSE.
-
-=back
-
-=cut
-
-sub T {
-    # Declare the return variable.
-    my $retVal = 0;
-    # Only proceed if tracing is turned on.
-    if ($Destination ne "NONE") {
-        # Get the parameters.
-        my ($category, $traceLevel) = @_;
-        if (!defined $traceLevel) {
-            # Here we have no category, so we need to get the calling package.
-            # The calling package is normally the first parameter. If it is
-            # omitted, the first parameter will be the tracelevel. So, the
-            # first thing we do is shift the so-called category into the
-            # $traceLevel variable where it belongs.
-            $traceLevel = $category;
-            my ($package, $fileName, $line) = caller;
-            # If there is no calling package, we default to "main".
-            if (!$package) {
-                $category = "main";
-            } else {
-                my @cats = split /::/, $package;
-                $category = $cats[$#cats];
-            }
-        }
-        # Save the category name and level.
-        $LastCategory = $category;
-        $LastLevel = $traceLevel;
-        # Convert it to lower case before we hash it.
-        $category = lc $category;
-        # Validate the trace level.
-        if (ref $traceLevel) {
-            Confess("Bad trace level.");
-        } elsif (ref $TraceLevel) {
-            Confess("Bad trace config.");
-        }
-        # Make the check. Note that level 0 shows even if the category is turned off.
-        $retVal = ($traceLevel <= $TraceLevel && ($traceLevel == 0 || $AllTrace || exists $Categories{$category}));
-    }
-    # Return the computed result.
-    return $retVal;
-}
-
-=head3 QTrace
-
-    my $data = QTrace($format);
-
-Return the queued trace data in the specified format.
-
-=over 4
-
-=item format
-
-C<html> to format the data as an HTML list, C<text> to format it as straight text.
-
-=back
-
-=cut
-
-sub QTrace {
-    # Get the parameter.
-    my ($format) = @_;
-    # Create the return variable.
-    my $retVal = "";
-    # Only proceed if there is an actual queue.
-    if (@Queue) {
-        # Process according to the format.
-        if ($format =~ m/^HTML$/i) {
-            # Convert the queue into an HTML list.
-            $retVal = "<ul>\n";
-            for my $line (@Queue) {
-                my $escapedLine = CGI::escapeHTML($line);
-                $retVal .= "<li>$escapedLine</li>\n";
-            }
-            $retVal .= "</ul>\n";
-        } elsif ($format =~ m/^TEXT$/i) {
-            # Convert the queue into a list of text lines.
-            $retVal = join("\n", @Queue) . "\n";
-        }
-        # Clear the queue.
-        @Queue = ();
-    }
-    # Return the formatted list.
-    return $retVal;
-}
 
 =head3 Confess
 
@@ -694,103 +193,10 @@ Message to include in the trace.
 sub Confess {
     # Get the parameters.
     my ($message) = @_;
-    # Set up the category and level.
-    $LastCategory = "(confess)";
-    $LastLevel = 0;
     # Trace the call stack.
     Cluck($message);
-    # Increment the confession count.
-    $Confessions++;
     # Abort the program.
     croak(">>> $message");
-}
-
-=head3 Confessions
-
-    my $count = Tracer::Confessions();
-
-Return the number of calls to L</Confess> by the current task.
-
-=cut
-
-sub Confessions {
-    return $Confessions;
-}
-
-
-=head3 SaveCGI
-
-    Tracer::SaveCGI($cgi);
-
-This method saves the CGI object but does not activate emergency tracing.
-It is used to allow L</Warn> to work in situations where emergency
-tracing is contra-indicated (e.g. the wiki).
-
-=over 4
-
-=item cgi
-
-Active CGI query object.
-
-=back
-
-=cut
-
-sub SaveCGI {
-    $SavedCGI = $_[0];
-}
-
-=head3 Warn
-
-    Warn($message, @options);
-
-This method traces an important message. If an RSS feed is configured
-(via I<FIG_Config::error_feed>) and the tracing destination is C<WARN>,
-then the message will be echoed to the feed. In general, a tracing
-destination of C<WARN> indicates that the caller is running as a web
-service in a production environment; however, this is not a requirement.
-
-To force warnings into the RSS feed even when the tracing destination
-is not C<WARN>, simply specify the C<Feed> tracing module. This can be
-configured automatically when L</StandardSetup> is used.
-
-The L</Cluck> method calls this one for its final message. Since
-L</Confess> calls L</Cluck>, this means that any error which is caught
-and confessed will put something in the feed. This insures that someone
-will be alerted relatively quickly when a failure occurs.
-
-=over 4
-
-=item message
-
-Message to be traced.
-
-=item options
-
-A list containing zero or more options.
-
-=back
-
-The permissible options are as follows.
-
-=over 4
-
-=item noStack
-
-If specified, then the stack trace is not included in the output.
-
-=back
-
-=cut
-
-sub Warn {
-    # Get the parameters.
-    my $message = shift @_;
-    my %options = map { $_ => 1 } @_;
-    # Save $@;
-    my $savedError = $@;
-    # Trace the message.
-    Trace($message);
 }
 
 
@@ -822,12 +228,7 @@ sub Assert {
 
     Cluck($message);
 
-Trace the call stack. Note that for best results, you should qualify the call with a
-trace condition. For example,
-
-    Cluck("Starting record parse.") if T(3);
-
-will only trace the stack if the trace level for the package is 3 or more.
+Trace the call stack.
 
 =over 4
 
@@ -843,7 +244,7 @@ sub Cluck {
     # Get the parameters.
     my ($message) = @_;
     # Trace what's happening.
-    Trace("Stack trace for event: $message");
+    warn "Stack trace for event: $message\n";
     # Get the stack trace.
     my @trace = LongMess();
     # Convert the trace to a series of messages.
@@ -851,10 +252,8 @@ sub Cluck {
         # Replace the tab at the beginning with spaces.
         $line =~ s/^\t/    /;
         # Trace the line.
-        Trace($line);
+        warn "$line\n";
     }
-    # Issue a warning. This displays the event message and inserts it into the RSS error feed.
-    Warn($message);
 }
 
 =head3 LongMess
@@ -878,421 +277,6 @@ sub LongMess {
     }
     # Return the result.
     return @retVal;
-}
-
-=head3 ETracing
-
-    ETracing($parameter, %options);
-
-Set up emergency tracing. Emergency tracing is tracing that is turned
-on automatically for any program that calls this method. The emergency
-tracing parameters are stored in a a file identified by a tracing key.
-If this method is called with a CGI object, then the tracing key is
-taken from a cookie. If it is called with no parameters, then the tracing
-key is taken from an environment variable. If it is called with a string,
-the tracing key is that string.
-
-=over 4
-
-=item parameter
-
-A parameter from which the tracing key is computed. If it is a scalar,
-that scalar is used as the tracing key. If it is a CGI object, the
-tracing key is taken from the C<IP> cookie. If it is omitted, the
-tracing key is taken from the C<TRACING> environment variable. If it
-is a CGI object and emergency tracing is not on, the C<Trace> and
-C<TF> parameters will be used to determine the type of tracing.
-
-=item options
-
-Hash of options. The permissible options are given below.
-
-=over 8
-
-=item destType
-
-Emergency tracing destination type to use if no tracing file is found. The
-default is C<WARN>.
-
-=item noParms
-
-If TRUE, then display of the saved CGI parms is suppressed. The default is FALSE.
-
-=item level
-
-The trace level to use if no tracing file is found. The default is C<0>.
-
-=back
-
-=back
-
-=cut
-
-sub ETracing {
-    # Get the parameter.
-    my ($parameter, %options) = @_;
-    # Check for CGI mode.
-    if (defined $parameter && ref $parameter eq 'CGI') {
-        $SavedCGI = $parameter;
-    } else {
-        $SavedCGI = undef;
-    }
-    # Check for the noParms option.
-    my $noParms = $options{noParms} || 0;
-    # Get the default tracing information.
-    my $tracing = $options{level} || 0;
-    my $dest = $options{destType} || "WARN";
-    # Check for emergency tracing.
-    my $tkey = EmergencyKey($parameter);
-    my $emergencyFile = EmergencyFileName($tkey);
-    if (-e $emergencyFile && (my $stat = stat($emergencyFile))) {
-        # We have the file. Read in the data.
-        my @tracing = GetFile($emergencyFile);
-        # Pull off the time limit.
-        my $expire = shift @tracing;
-        # Convert it to seconds.
-        $expire *= 3600;
-        # Check the file data.
-        my ($now) = gettimeofday;
-        if ($now - $stat->mtime <= $expire) {
-            # Emergency tracing is on. Pull off the destination and
-            # the trace level;
-            $dest = shift @tracing;
-            my $level = shift @tracing;
-            # Insure Tracer is specified.
-            my %moduleHash = map { $_ => 1 } @tracing;
-            $moduleHash{Tracer} = 1;
-            # Set the trace parameter.
-            $tracing = join(" ", $level, sort keys %moduleHash);
-        }
-    }
-    # Convert the destination to a real tracing destination.
-    $dest = EmergencyTracingDest($tkey, $dest);
-    # Setup the tracing we've determined from all the stuff above.
-    TSetup($tracing, $dest);
-    # Check to see if we're a web script.
-    if (defined $SavedCGI) {
-        # Yes we are. Trace the form and environment data if it's not suppressed.
-        if (! $noParms) {
-            TraceParms($SavedCGI);
-        }
-        # Check for RAW mode. In raw mode, we print a fake header so that we see everything
-        # emitted by the script in its raw form.
-        if (T(Raw => 3)) {
-            print CGI::header(-type => 'text/plain', -tracing => 'Raw');
-        }
-    }
-}
-
-=head3 EmergencyFileName
-
-    my $fileName = Tracer::EmergencyFileName($tkey);
-
-Return the emergency tracing file name. This is the file that specifies
-the tracing information.
-
-=over 4
-
-=item tkey
-
-Tracing key for the current program.
-
-=item RETURN
-
-Returns the name of the file to contain the emergency tracing information.
-
-=back
-
-=cut
-
-sub EmergencyFileName {
-    # Get the parameters.
-    my ($tkey) = @_;
-    # Compute the emergency tracing file name.
-    return "$FIG_Config::temp/Emergency$tkey.txt";
-}
-
-=head3 EmergencyFileTarget
-
-    my $fileName = Tracer::EmergencyFileTarget($tkey);
-
-Return the emergency tracing target file name. This is the file that receives
-the tracing output for file-based tracing.
-
-=over 4
-
-=item tkey
-
-Tracing key for the current program.
-
-=item RETURN
-
-Returns the name of the file to contain the trace output.
-
-=back
-
-=cut
-
-sub EmergencyFileTarget {
-    # Get the parameters.
-    my ($tkey) = @_;
-    # Compute the emergency tracing file name.
-    return "$FIG_Config::temp/trace$tkey.log";
-}
-
-=head3 EmergencyTracingDest
-
-    my $dest = Tracer::EmergencyTracingDest($tkey, $myDest);
-
-This method converts an emergency tracing destination to a real
-tracing destination. The main difference is that if the
-destination is C<FILE> or C<APPEND>, we convert it to file
-output. If the destination is C<DUAL>, we convert it to file
-and standard output.
-
-=over 4
-
-=item tkey
-
-Tracing key for this environment.
-
-=item myDest
-
-Destination from the emergency tracing file.
-
-=item RETURN
-
-Returns a destination that can be passed into L</TSetup>.
-
-=back
-
-=cut
-
-sub EmergencyTracingDest {
-    # Get the parameters.
-    my ($tkey, $myDest) = @_;
-    # Declare the return variable.
-    my $retVal = $myDest;
-    # Process according to the destination value.
-    if ($myDest eq 'FILE') {
-        $retVal = ">" . EmergencyFileTarget($tkey);
-    } elsif ($myDest eq 'APPEND') {
-        $retVal = ">>" . EmergencyFileTarget($tkey);
-    } elsif ($myDest eq 'DUAL') {
-        $retVal = "+>" . EmergencyFileTarget($tkey);
-    } elsif ($myDest eq 'WARN') {
-        $retVal = "WARN";
-    }
-    # Return the result.
-    return $retVal;
-}
-
-=head3 Emergency
-
-    Emergency($key, $hours, $dest, $level, @modules);
-
-Turn on emergency tracing. This method is normally invoked over the web from
-a debugging console, but it can also be called by the C<trace.pl> script.
-The caller specifies the duration of the emergency in hours, the desired tracing
-destination, the trace level, and a list of the trace modules to activate.
-For the length of the duration, when a program in an environment with the
-specified tracing key active invokes a Sprout CGI script, tracing will be
-turned on automatically. See L</TSetup> for more about tracing setup and
-L</ETracing> for more about emergency tracing.
-
-=over 4
-
-=item tkey
-
-The tracing key. This is used to identify the control file and the trace file.
-
-=item hours
-
-Number of hours to keep emergency tracing alive.
-
-=item dest
-
-Tracing destination. If no path information is specified for a file
-destination, it is put in the FIG temporary directory.
-
-=item level
-
-Tracing level. A higher level means more trace messages.
-
-=item modules
-
-A list of the tracing modules to activate.
-
-=back
-
-=cut
-
-sub Emergency {
-    # Get the parameters.
-    my ($tkey, $hours, $dest, $level, @modules) = @_;
-    # Create the emergency file.
-    my $specFile = EmergencyFileName($tkey);
-    my $outHandle = Open(undef, ">$specFile");
-    print $outHandle join("\n", $hours, $dest, $level, @modules, "");
-}
-
-=head3 EmergencyKey
-
-    my $tkey = EmergencyKey($parameter);
-
-Return the Key to be used for emergency tracing. This could be an IP address,
- a session ID, or a user name, depending on the environment.
-
-=over 4
-
-=item parameter
-
-Parameter defining the method for finding the tracing key. If it is a scalar,
-then it is presumed to be the tracing key itself. If it is a CGI object, then
-the tracing key is taken from the C<IP> cookie. Otherwise, the tracing key is
-taken from the C<TRACING> environment variable.
-
-=item RETURN
-
-Returns the key to be used for labels in emergency tracing.
-
-=back
-
-=cut
-
-sub EmergencyKey {
-    # Get the parameters.
-    my ($parameter) = @_;
-    # Declare the return variable.
-    my $retVal;
-    # Determine the parameter type.
-    if (! defined $parameter) {
-        # Here we're supposed to check the environment. If that fails, we
-        # get the effective login ID.
-        $retVal = $ENV{TRACING} || eval { scalar getpwuid($<) } || 100;
-    } else {
-        my $ptype = ref $parameter;
-        if ($ptype eq 'CGI') {
-            # Here we were invoked from a web page. Look for a cookie.
-            $retVal = $parameter->cookie('IP');
-        } elsif (! $ptype) {
-            # Here the key was passed in.
-            $retVal = $parameter;
-        }
-    }
-    # If no luck finding a key, use the PID.
-    if (! defined $retVal) {
-        $retVal = $$;
-    }
-    # Return the result.
-    return $retVal;
-}
-
-
-=head3 TraceParms
-
-    Tracer::TraceParms($cgi);
-
-Trace the CGI parameters at trace level CGI => 3 and the environment variables
-at level CGI => 4. A self-referencing URL is traced at level CGI => 2.
-
-=over 4
-
-=item cgi
-
-CGI query object containing the parameters to trace.
-
-=back
-
-=cut
-
-sub TraceParms {
-    # Get the parameters.
-    my ($cgi) = @_;
-    if (T(CGI => 2)) {
-        # Here we trace the GET-style URL for the script, but only if it's
-        # relatively small.
-        my $url = $cgi->url(-relative => 1, -query => 1);
-        my $len = length($url);
-        if ($len < 500) {
-            Trace("[URL] $url");
-        } elsif ($len > 2048) {
-            Trace("[URL] URL is too long to use with GET ($len characters).");
-        } else {
-            Trace("[URL] URL length is $len characters.");
-        }
-    }
-    if (T(CGI => 3)) {
-        # Here we want to trace the parameter data.
-        my @names = $cgi->param;
-        for my $parmName (sort @names) {
-            # Note we skip the Trace parameters, which are for our use only.
-            if ($parmName ne 'Trace' && $parmName ne 'TF') {
-                my @values = $cgi->param($parmName);
-                Trace("[CGI] $parmName = " . join(", ", @values));
-            }
-        }
-        # Display the request method.
-        my $method = $cgi->request_method();
-        Trace("Method: $method");
-    }
-    if (T(CGI => 4)) {
-        # Here we want the environment data too.
-        for my $envName (sort keys %ENV) {
-            Trace("[ENV] $envName = $ENV{$envName}");
-        }
-    }
-}
-
-=head3 TraceImages
-
-    Tracer::TraceImages($htmlString);
-
-Trace information about all of an html document's images. The tracing
-will be for type "IMG" at level 3. The image's source string
-will be displayed. This is generally either the URL of the image or
-raw data for the image itself. If the source is too long, only the first 300
-characters will be shown at trace level 3. The entire source will be shown,
-however, at trace level 4. This method is not very smart, and might catch
-Javascript code, but it is still useful when debugging the arcane
-behavior of images in multiple browser environments.
-
-=over 4
-
-=item htmlString
-
-HTML text for an outgoing web page.
-
-=back
-
-=cut
-
-sub TraceImages {
-    # Only proceed if we're at the proper trace level.
-    if (T(IMG => 3)) {
-        # For performance reasons we're manipulating $_[0] instead of retrieving the string
-        # into a variable called "$htmlString". This is because we expect html strings to be
-        # long, and don't want to copy them any more than we have to.
-        Trace(length($_[0]) . " characters in web page.");
-        # Loop through the HTML, culling image tags.
-        while ($_[0] =~ /<img\s+[^>]+?src="([^"]+)"/sgi) {
-            # Extract the source string and determine whether or not it's too long.
-            my $srcString = $1;
-            my $pos = pos($_[0]) - length($srcString);
-            my $excess = length($srcString) - 300;
-            # We'll put the display string in here.
-            my $srcDisplay = $srcString;
-            # If it's a data string, split it at the comma.
-            $srcDisplay =~ s/^(data[^,]+,)/$1\n/;
-            # If there's no excess or we're at trace level 4, we're done. At level 3 with
-            # a long string, however, we only show the first 300 characters.
-            if ($excess > 0 && ! T(IMG => 4)) {
-                $srcDisplay = substr($srcDisplay,0,300) . "\nplus $excess characters.";
-            }
-            # Output the trace message.
-            Trace("Image tag at position $pos:\n$srcDisplay");
-        }
-    }
 }
 
 
@@ -1344,7 +328,6 @@ sub GetFile {
     # Close it.
     close $handle;
     my $actualLines = @retVal;
-    Trace("$actualLines lines read from file $fileName.") if T(File => 2);
     # Return the file's contents in the desired format.
     if (wantarray) {
         return @retVal;
@@ -1384,7 +367,6 @@ sub PutFile {
     if (ref $lines ne 'ARRAY') {
         # Here we have a scalar, so we write it raw.
         print $handle $lines;
-        Trace("Scalar put to file $fileName.") if T(File => 3);
     } else {
         # Write the lines one at a time.
         my $count = 0;
@@ -1392,7 +374,6 @@ sub PutFile {
             print $handle "$line\n";
             $count++;
         }
-        Trace("$count lines put to file $fileName.") if T(File => 3);
     }
     # Close the output file.
     close $handle;
@@ -1725,7 +706,6 @@ Security privileges to be given to the directory if it is created.
 sub Insure {
     my ($dirName, $chmod) = @_;
     if (! -d $dirName) {
-        Trace("Creating $dirName directory.") if T(2);
         eval {
             mkpath $dirName;
             # If we have permissions specified, set them here.
@@ -1760,7 +740,6 @@ sub ChDir {
     if (! -d $dirName) {
         Confess("Cannot change to directory $dirName: no such directory.");
     } else {
-        Trace("Changing to directory $dirName.") if T(File => 4);
         my $okFlag = chdir $dirName;
         if (! $okFlag) {
             Confess("Error switching to directory $dirName.");
@@ -1768,139 +747,6 @@ sub ChDir {
     }
 }
 
-=head3 SetPermissions
-
-    Tracer::SetPermissions($dirName, $group, $mask, %otherMasks);
-
-Set the permissions for a directory and all the files and folders inside it.
-In addition, the group ownership will be changed to the specified value.
-
-This method is more vulnerable than most to permission and compatability
-problems, so it does internal error recovery.
-
-=over 4
-
-=item dirName
-
-Name of the directory to process.
-
-=item group
-
-Name of the group to be assigned.
-
-=item mask
-
-Permission mask. Bits that are C<1> in this mask will be ORed into the
-permission bits of any file or directory that does not already have them
-set to 1.
-
-=item otherMasks
-
-Map of search patterns to permission masks. If a directory name matches
-one of the patterns, that directory and all its members and subdirectories
-will be assigned the new pattern. For example, the following would
-assign 0664 to most files, but would use 0777 for directories named C<tmp>.
-
-    Tracer::SetPermissions($dirName, 'fig', 01664, '^tmp$' => 01777);
-
-The list is ordered, so the following would use 0777 for C<tmp1> and
-0666 for C<tmp>, C<tmp2>, or C<tmp3>.
-
-    Tracer::SetPermissions($dirName, 'fig', 01664, '^tmp1' => 0777,
-                                                   '^tmp' => 0666);
-
-Note that the pattern matches are all case-insensitive, and only directory
-names are matched, not file names.
-
-=back
-
-=cut
-
-sub SetPermissions {
-    # Get the parameters.
-    my ($dirName, $group, $mask, @otherMasks) = @_;
-    # Set up for error recovery.
-    eval {
-        # Switch to the specified directory.
-        ChDir($dirName);
-        # Get the group ID.
-        my $gid = getgrnam($group);
-        # Get the mask for tracing.
-        my $traceMask = sprintf("%04o", $mask) . "($mask)";
-        Trace("Fixing permissions for directory $dirName using group $group($gid) and mask $traceMask.") if T(File => 2);
-        my $fixCount = 0;
-        my $lookCount = 0;
-        # @dirs will be a stack of directories to be processed.
-        my @dirs = (getcwd());
-        while (scalar(@dirs) > 0) {
-            # Get the current directory.
-            my $dir = pop @dirs;
-            # Check for a match to one of the specified directory names. To do
-            # that, we need to pull the individual part of the name off of the
-            # whole path.
-            my $simpleName = $dir;
-            if ($dir =~ m!/([^/]+)$!) {
-                $simpleName = $1;
-            }
-            Trace("Simple directory name for $dir is $simpleName.") if T(File => 4);
-            # Search for a match.
-            my $match = 0;
-            my $i;
-            for ($i = 0; $i < $#otherMasks && ! $match; $i += 2) {
-                my $pattern = $otherMasks[$i];
-                if ($simpleName =~ /$pattern/i) {
-                    $match = 1;
-                }
-            }
-            # Find out if we have a match. Note we use $i-1 because the loop added 2
-            # before terminating due to the match.
-            if ($match && $otherMasks[$i-1] != $mask) {
-                # This directory matches one of the incoming patterns, and it's
-                # a different mask, so we process it recursively with that mask.
-                SetPermissions($dir, $group, $otherMasks[$i-1], @otherMasks);
-            } else {
-                # Here we can process normally. Get all of the non-hidden members.
-                my @submems = OpenDir($dir, 1);
-                for my $submem (@submems) {
-                    # Get the full name.
-                    my $thisMem = "$dir/$submem";
-                    Trace("Checking member $thisMem.") if T(4);
-                    $lookCount++;
-                    if ($lookCount % 1000 == 0) {
-                        Trace("$lookCount members examined. Current is $thisMem. Mask is $traceMask") if T(File => 3);
-                    }
-                    # Fix the group.
-                    chown -1, $gid, $thisMem;
-                    # Insure this member is not a symlink.
-                    if (! -l $thisMem) {
-                        # Get its info.
-                        my $fileInfo = stat $thisMem;
-                        # Only proceed if we got the info. Otherwise, it's a hard link
-                        # and we want to skip it anyway.
-                        if ($fileInfo) {
-                            my $fileMode = $fileInfo->mode;
-                            if (($fileMode & $mask) != $mask) {
-                                # Fix this member.
-                                $fileMode |= $mask;
-                                chmod $fileMode, $thisMem;
-                                $fixCount++;
-                            }
-                            # If it's a subdirectory, stack it.
-                            if (-d $thisMem) {
-                                push @dirs, $thisMem;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        Trace("$lookCount files and directories processed, $fixCount fixed.") if T(File => 2);
-    };
-    # Check for an error.
-    if ($@) {
-        Confess("SetPermissions error: $@");
-    }
-}
 
 =head3 GetLine
 
@@ -1930,7 +776,6 @@ sub GetLine {
     my ($handle) = @_;
     # Declare the return variable.
     my @retVal = ();
-    Trace("File position is " . tell($handle) . ". EOF flag is " . eof($handle) . ".") if T(File => 4);
     # Read from the file.
     my $line = <$handle>;
     # Only proceed if we found something.
@@ -1938,14 +783,6 @@ sub GetLine {
         # Remove the new-line. We are a bit over-cautious here because the file may be coming in via an
         # upload control and have a nonstandard EOL combination.
         $line =~ s/(\r|\n)+$//;
-        # Here we do some fancy tracing to help in debugging complicated EOL marks.
-        if (T(File => 4)) {
-            my $escapedLine = $line;
-            $escapedLine =~ s/\n/\\n/g;
-            $escapedLine =~ s/\r/\\r/g;
-            $escapedLine =~ s/\t/\\t/g;
-            Trace("Line read: -->$escapedLine<--");
-        }
         # If the line is empty, return a single empty string; otherwise, parse
         # it into fields.
         if ($line eq "") {
@@ -1953,9 +790,6 @@ sub GetLine {
         } else {
             push @retVal, split /\t/,$line;
         }
-    } else {
-        # Trace the reason the read failed.
-        Trace("End of file: $!") if T(File => 3);
     }
     # Return the result.
     return @retVal;
@@ -2019,40 +853,6 @@ sub PrintLine {
 
 
 =head2 Other Useful Methods
-
-=head3 MergeOptions
-
-    Tracer::MergeOptions(\%table, \%defaults);
-
-Merge default values into a hash table. This method looks at the key-value pairs in the
-second (default) hash, and if a matching key is not found in the first hash, the default
-pair is copied in. The process is similar to L</GetOptions>, but there is no error-
-checking and no return value.
-
-=over 4
-
-=item table
-
-Hash table to be updated with the default values.
-
-=item defaults
-
-Default values to be merged into the first hash table if they are not already present.
-
-=back
-
-=cut
-
-sub MergeOptions {
-    # Get the parameters.
-    my ($table, $defaults) = @_;
-    # Loop through the defaults.
-    while (my ($key, $value) = each %{$defaults}) {
-        if (!exists $table->{$key}) {
-            $table->{$key} = $value;
-        }
-    }
-}
 
 =head3 IDHASH
 

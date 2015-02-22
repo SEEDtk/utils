@@ -320,7 +320,7 @@ Increment the specified statistic and return TRUE if the result is a
 multiple of the specified period. This is a helpful method for generating
 periodic trace messages. For example,
 
-    Trace($stats->Ask('frogs') . " frogs processed.") if $stats->Check(frogs => 100) && T(3);
+    print $stats->Ask('frogs') . " frogs processed.\n" if $stats->Check(frogs => 100) && T(3);
 
 will generate a trace message at level 3 for every 100 frogs processed.
 
