@@ -6,6 +6,6 @@ This file contains Bruce's current to-do list.
 
     ## TODO Load the full coreseed into a new database
     ## TODO determine how to factor Shrub -- one object with everything, or many sub-objects with different functional areas
-    ## TODO common way to handle pipeline scripts
     ## TODO implement embedded relationships
+    ## TODO figure out how to add jumping relationships to the crossings list
 
