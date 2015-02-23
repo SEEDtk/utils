@@ -4,8 +4,8 @@ This file contains Bruce's current to-do list.
 
 =cut
 
-    ## TODO Load Terry's new data into a database
+    ## TODO Load the full coreseed into a new database
     ## TODO determine how to factor Shrub -- one object with everything, or many sub-objects with different functional areas
     ## TODO common way to handle pipeline scripts
-    ## Test ShrubLoadGenomes
-    ## Test ShrubLoadSubsystems
+    ## TODO implement embedded relationships
+

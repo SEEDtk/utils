@@ -23,7 +23,7 @@ package Tracer;
     use FIG_Config;
     use base qw(Exporter);
     use vars qw(@EXPORT @EXPORT_OK);
-    @EXPORT = qw(Confess Cluck Min Max Assert Open OpenDir TICK Constrain Insure ChDirWarn IDHASH);
+    @EXPORT = qw(Confess Cluck Min Max Assert Open OpenDir TICK Constrain Insure ChDir IDHASH);
     @EXPORT_OK = qw(GetFile ParseRecord UnEscape Escape PrintLine PutLine);
     use Carp qw(longmess croak carp confess);
     use CGI;
