@@ -5,7 +5,5 @@ This file contains Bruce's current to-do list.
 =cut
 
     ## TODO Load the full coreseed into a new database
-    ## TODO determine how to factor Shrub -- one object with everything, or many sub-objects with different functional areas
-    ## TODO implement embedded relationships
-    ## TODO figure out how to add jumping relationships to the crossings list
+    ## TODO add a method for queries based on secondary fields
 
