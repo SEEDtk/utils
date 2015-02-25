@@ -81,6 +81,11 @@ this insures you are using the same repository as everyone else.
 If this is an eclipse environment, the name of the project cloned from the main SEEDtk/seedtk
 project (that is, the name of the I<project directory project>).
 
+=item gfw
+
+If this is specified, then it is presumed you have GitHub for Windows installed. Its copy of
+GIT will be added to your path in the C<user-env> script.
+
 =back
 
 =head2 Notes for Programmers
@@ -130,6 +135,7 @@ L</WriteAllParams> method.
             ["dirs", "verify default subdirectories exist"],
             ["dna=s", "location of the DNA repository (if other than local)"],
             ["links", "generate Links.html file"],
+            ["gfw", "add GitHub for Windows GIT to the path (Windows only)"],
             ["eclipse=s", "if specified, then we will set up for Eclipse; the value must be the base name of the project directory project"]
             );
     print "Analyzing directories.\n";
@@ -260,22 +266,20 @@ L</WriteAllParams> method.
             SetupCGIs($FIG_Config::web_dir, $opt);
         }
     }
-    # If this is Unix mode, we need to create the pull-all script.
-    if (! $eclipseMode) {
-        my $fileName = "$projDir/pull-all.sh";
-        open(my $oh, ">$fileName") || die "Could not open $fileName: $!";
-        print $oh "echo Pulling project directory.\n";
-        print $oh "pushd $projDir\n";
+    # Now we need to create the pull-all script.
+    my $fileName = "$projDir/pull-all" . ($FIG_Config::win_mode ? ".cmd" : ".sh");
+    open(my $oh, ">$fileName") || die "Could not open $fileName: $!";
+    print $oh "echo Pulling project directory.\n";
+    print $oh "cd $projDir\n";
+    print $oh "git pull\n";
+    for my $module (@FIG_Config::modules) {
+        print $oh "echo Pulling $module\n";
+        print $oh "cd $modules{$module}\n";
         print $oh "git pull\n";
-        for my $module (@FIG_Config::modules) {
-            print $oh "echo Pulling $module\n";
-            print $oh "cd $modules{$module}\n";
-            print $oh "git pull\n";
-        }
-        print $oh "popd\n";
-        close $oh;
-        print "Pull-all script written to $fileName.\n";
     }
+    print $oh "cd $projDir\n";
+    close $oh;
+    print "Pull-all script written to $fileName.\n";
     # Finally, check for the links file.
     if ($opt->links) {
         # Determine the output location for the links file.
@@ -527,6 +531,10 @@ sub WriteAllConfigs {
         # explicit path-- the current environment has the path we need already in it.
         $paths = "$ENV{PATH}";
         $paths =~ s/&/^&/g;
+        # Check for the GitHub for Windows option.
+        if ($opt->gfw) {
+            $paths .= ';%localappdata%\GitHub\PORTAB~1\cmd'
+        }
         print $oh "path $paths\n";
     } else {
         # On the Mac, we simply put the bin subdirectory in the path.
