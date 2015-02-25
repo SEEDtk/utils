@@ -6,4 +6,5 @@ This file contains Bruce's current to-do list.
 
     ## TODO Load the full coreseed into a new database
     ## TODO add a method for queries based on secondary fields
+    ## TODO query console for Doc page
 
