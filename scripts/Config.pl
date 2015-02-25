@@ -269,15 +269,23 @@ L</WriteAllParams> method.
     # Now we need to create the pull-all script.
     my $fileName = "$projDir/pull-all" . ($FIG_Config::win_mode ? ".cmd" : ".sh");
     open(my $oh, ">$fileName") || die "Could not open $fileName: $!";
+    # The pushd command in windows can't handle forward slashes in directory names,
+    # so if this is windows we have to translate.
+    my $projDirForPush = $projDir;
+    if ($winMode) {
+        $projDirForPush =~ tr/\//\\/;
+    }
+    # Now write the commands to run through the directories and pull.
     print $oh "echo Pulling project directory.\n";
-    print $oh "cd $projDir\n";
+    print $oh "pushd $projDirForPush\n";
     print $oh "git pull\n";
     for my $module (@FIG_Config::modules) {
         print $oh "echo Pulling $module\n";
         print $oh "cd $modules{$module}\n";
         print $oh "git pull\n";
     }
-    print $oh "cd $projDir\n";
+    # Restore the old directory.
+    print $oh "popd\n";
     close $oh;
     print "Pull-all script written to $fileName.\n";
     # Finally, check for the links file.
