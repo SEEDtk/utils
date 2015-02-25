@@ -17,11 +17,11 @@
 #
 
 
-    use strict;
-    use warnings;
-    use FIG_Config;
-    use Shrub;
-    use ScriptUtils;
+use strict;
+use warnings;
+use FIG_Config;
+use Shrub;
+use ScriptUtils;
 
 =head1 Prototype Shrub Pipeline Script
 
@@ -44,14 +44,14 @@ L<ScriptUtils/ih_options> plus the following.
 
 =cut
 
-    # Get the command-line parameters.
-    my $opt = ScriptUtils::Opts('parm1 parm2 ...', Shrub::script_options(),
-            ScriptUtils::ih_options(),
-            ## more command-line options
-            );
-    # Connect to the database.
-    my $shrub = Shrub->new_for_script($opt);
-    # Open the input file.
-    my $ih = ScriptUtils::IH($opt->input);
+# Get the command-line parameters.
+my $opt = ScriptUtils::Opts('parm1 parm2 ...', Shrub::script_options(),
+        ScriptUtils::ih_options(),
+        ## more command-line options
+        );
+# Connect to the database.
+my $shrub = Shrub->new_for_script($opt);
+# Open the input file.
+my $ih = ScriptUtils::IH($opt->input);
 
-    ## process the input to produce the output.
+## process the input to produce the output.

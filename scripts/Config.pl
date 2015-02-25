@@ -18,20 +18,20 @@
 #
 
 
-    use strict;
-    use File::Basename;
-    use File::Spec;
-    use File::Copy;
-    use File::Path;
-    use Getopt::Long::Descriptive;
-    use XML::Writer;
+use strict;
+use File::Basename;
+use File::Spec;
+use File::Copy;
+use File::Path;
+use Getopt::Long::Descriptive;
+use XML::Writer;
 
-    # We need to look inside the FIG_Config even though it is loaded at
-    # run-time, so we will get lots of warnings about one-time variables.
-    no warnings qw(once);
+# We need to look inside the FIG_Config even though it is loaded at
+# run-time, so we will get lots of warnings about one-time variables.
+no warnings qw(once);
 
-    ## THIS CONSTANT DEFINES THE CORE MODULES
-    use constant CORE => qw(utils ERDB kernel);
+## THIS CONSTANT DEFINES THE CORE MODULES
+use constant CORE => qw(utils ERDB kernel);
 
 =head1 Generate SEEDtk Configuration Files
 
@@ -96,217 +96,217 @@ L</WriteAllParams> method.
 
 =cut
 
-    $| = 1; # Prevent buffering on STDOUT.
-    print "Retrieving current configuration.\n";
-    # Get the base directory. For Unix, this is the project
-    # directory. For Eclipse, this is the project directory's
-    # parent. We will also figure out the eclipse mode here.
-    my ($base_dir, $eclipseMode);
-    if ($ENV{KB_TOP}) {
-        # Here we are in a Unix setup. The base directory has been
-        # stored in the environment.
-        $base_dir = $ENV{KB_TOP};
+$| = 1; # Prevent buffering on STDOUT.
+print "Retrieving current configuration.\n";
+# Get the base directory. For Unix, this is the project
+# directory. For Eclipse, this is the project directory's
+# parent. We will also figure out the eclipse mode here.
+my ($base_dir, $eclipseMode);
+if ($ENV{KB_TOP}) {
+    # Here we are in a Unix setup. The base directory has been
+    # stored in the environment.
+    $base_dir = $ENV{KB_TOP};
+} else {
+    # Get the directory this script is running in.
+    $base_dir = dirname(File::Spec->rel2abs(__FILE__));
+    # Fix Windows slash craziness.
+    $base_dir =~ tr/\\/\//;
+    # Chop off the project part of the path.
+    unless ($base_dir =~ /(.+)\/utils\/scripts$/) {
+        die "Directory structure is incompatible with Eclipse setup. Project must be named \"utils\".";
     } else {
-        # Get the directory this script is running in.
-        $base_dir = dirname(File::Spec->rel2abs(__FILE__));
-        # Fix Windows slash craziness.
-        $base_dir =~ tr/\\/\//;
-        # Chop off the project part of the path.
-        unless ($base_dir =~ /(.+)\/utils\/scripts$/) {
-            die "Directory structure is incompatible with Eclipse setup. Project must be named \"utils\".";
-        } else {
-            # Save the base directory.
-            $base_dir = $1;
-            # Denote this is Eclipse mode.
-            $eclipseMode = 1;
-            # Activate the include directory for the "Env" module.
-            unshift @INC, "$base_dir/utils/lib";
-        }
+        # Save the base directory.
+        $base_dir = $1;
+        # Denote this is Eclipse mode.
+        $eclipseMode = 1;
+        # Activate the include directory for the "Env" module.
+        unshift @INC, "$base_dir/utils/lib";
     }
-    # Load the environment library.
-    require Env;
-    # Determine the operating system.
-    my $winMode = ($^O =~ /Win/ ? 1 : 0);
-    # Analyze the command line.
-    my ($opt, $usage) = describe_options('%o %c dataRootDirectory webRootDirectory',
-            ["clear|c", "ignore current configuration values"],
-            ["fc=s", "name of a file to use for the FIG_Config output, or \"off\" to turn off FIG_Config output",
-                    { default => "FIG_Config.pm" }],
-            ["dirs", "verify default subdirectories exist"],
-            ["dna=s", "location of the DNA repository (if other than local)"],
-            ["links", "generate Links.html file"],
-            ["gfw", "add GitHub for Windows GIT to the path (Windows only)"],
-            ["eclipse=s", "if specified, then we will set up for Eclipse; the value must be the base name of the project directory project"]
-            );
-    print "Analyzing directories.\n";
-    # The root directories will be put in here.
-    my ($dataRootDir, $webRootDir) = ('', '');
-    # This points to the project directory project.
-    my $projDir = ($eclipseMode ? join("/", $base_dir, $opt->eclipse) : $base_dir);
-    if (! -d "$projDir/config") {
-        die "Project directory not found in $projDir.";
+}
+# Load the environment library.
+require Env;
+# Determine the operating system.
+my $winMode = ($^O =~ /Win/ ? 1 : 0);
+# Analyze the command line.
+my ($opt, $usage) = describe_options('%o %c dataRootDirectory webRootDirectory',
+        ["clear|c", "ignore current configuration values"],
+        ["fc=s", "name of a file to use for the FIG_Config output, or \"off\" to turn off FIG_Config output",
+                { default => "FIG_Config.pm" }],
+        ["dirs", "verify default subdirectories exist"],
+        ["dna=s", "location of the DNA repository (if other than local)"],
+        ["links", "generate Links.html file"],
+        ["gfw", "add GitHub for Windows GIT to the path (Windows only)"],
+        ["eclipse=s", "if specified, then we will set up for Eclipse; the value must be the base name of the project directory project"]
+        );
+print "Analyzing directories.\n";
+# The root directories will be put in here.
+my ($dataRootDir, $webRootDir) = ('', '');
+# This points to the project directory project.
+my $projDir = ($eclipseMode ? join("/", $base_dir, $opt->eclipse) : $base_dir);
+if (! -d "$projDir/config") {
+    die "Project directory not found in $projDir.";
+}
+# Get the name of the real FIG_Config file (not the output file,
+# if one was specified, the real one).
+my $fig_config_name = "$projDir/config/FIG_Config.pm";
+# Now we want to get the current environment. If the CLEAR option is
+# specified or there is no file present, we stay blank; otherwise, we
+# load the existing FIG_Config.
+if (! $opt->clear && -f $fig_config_name) {
+    RunFigConfig($fig_config_name);
+}
+# Insure the list of modules includes the cores. If they are not
+# present, we add them to the front of the list.
+for my $module (CORE) {
+    if (! grep { $_ eq $module } @FIG_Config::modules) {
+        unshift @FIG_Config::modules, $module;
     }
-    # Get the name of the real FIG_Config file (not the output file,
-    # if one was specified, the real one).
-    my $fig_config_name = "$projDir/config/FIG_Config.pm";
-    # Now we want to get the current environment. If the CLEAR option is
-    # specified or there is no file present, we stay blank; otherwise, we
-    # load the existing FIG_Config.
-    if (! $opt->clear && -f $fig_config_name) {
-        RunFigConfig($fig_config_name);
+}
+# This hash will map each module to its directory.
+my %modules;
+for my $module (@FIG_Config::modules) {
+    # Compute the directory name depending on the mode.
+    my $dir = ($eclipseMode ? "$base_dir/$module" : "$projDir/modules/$module");
+    # Make sure it exists.
+    if (! -d $dir) {
+        die "Could not find expected module directory $dir.";
     }
-    # Insure the list of modules includes the cores. If they are not
-    # present, we add them to the front of the list.
-    for my $module (CORE) {
-        if (! grep { $_ eq $module } @FIG_Config::modules) {
-            unshift @FIG_Config::modules, $module;
-        }
+    # Add it to the hash.
+    $modules{$module} = $dir;
+}
+# Make sure we have the data directory if there is no data root
+# in the command-line parameters.
+if (! defined $FIG_Config::shrub_dir) {
+    $dataRootDir = FixPath($ARGV[0]);
+    if (! defined $dataRootDir) {
+        die "A data root directory is required if no current value exists in FIG_Config.";
+    } elsif (! -d $dataRootDir) {
+        die "The specified data root directory $dataRootDir was not found.";
     }
-    # This hash will map each module to its directory.
-    my %modules;
-    for my $module (@FIG_Config::modules) {
-        # Compute the directory name depending on the mode.
-        my $dir = ($eclipseMode ? "$base_dir/$module" : "$projDir/modules/$module");
-        # Make sure it exists.
-        if (! -d $dir) {
-            die "Could not find expected module directory $dir.";
-        }
-        # Add it to the hash.
-        $modules{$module} = $dir;
+}
+# Make sure we have the web directory if there is no web root in
+# the command-line parameters.
+if (! defined $FIG_Config::web_dir) {
+    $webRootDir = FixPath($ARGV[1]);
+    if (! defined $webRootDir) {
+        die "A web root directory is required if no current value exists in FIG_Config.";
+    } elsif (! -d $webRootDir) {
+        die "The specified web root directory $webRootDir was not found.";
     }
-    # Make sure we have the data directory if there is no data root
-    # in the command-line parameters.
-    if (! defined $FIG_Config::shrub_dir) {
-        $dataRootDir = FixPath($ARGV[0]);
-        if (! defined $dataRootDir) {
-            die "A data root directory is required if no current value exists in FIG_Config.";
-        } elsif (! -d $dataRootDir) {
-            die "The specified data root directory $dataRootDir was not found.";
-        }
+}
+#If the FIG_Config write has NOT been turned off, then write the FIG_Config.
+if ($opt->fc eq 'off') {
+    print "FIG_Config output suppressed.\n";
+} else {
+    # Compute the FIG_Config file name.
+    my $outputName = $opt->fc;
+    # Fix the slash craziness for Windows.
+    $outputName =~ tr/\\/\//;
+    # If the name is pathless, put it in the config directory.
+    if ($outputName !~ /\//) {
+        $outputName = "$projDir/config/$outputName";
     }
-    # Make sure we have the web directory if there is no web root in
-    # the command-line parameters.
-    if (! defined $FIG_Config::web_dir) {
-        $webRootDir = FixPath($ARGV[1]);
-        if (! defined $webRootDir) {
-            die "A web root directory is required if no current value exists in FIG_Config.";
-        } elsif (! -d $webRootDir) {
-            die "The specified web root directory $webRootDir was not found.";
-        }
+    # If we are overwriting the real FIG_Config, back it up.
+    if (-f $fig_config_name && $outputName eq $fig_config_name) {
+        print "Backing up $fig_config_name.\n";
+        copy $fig_config_name, "$projDir/config/FIG_Config_old.pm";
     }
-    #If the FIG_Config write has NOT been turned off, then write the FIG_Config.
-    if ($opt->fc eq 'off') {
-        print "FIG_Config output suppressed.\n";
+    # Write the FIG_Config.
+    print "Writing configuration to $outputName.\n";
+    WriteAllParams($outputName, \%modules, $projDir, $dataRootDir, $webRootDir, $winMode, $opt);
+    # Execute it to get the latest variable values.
+    print "Reading back new configuration.\n";
+    RunFigConfig($outputName);
+}
+# Are we setting up default data directories?
+if ($opt->dirs) {
+    # Yes. Insure we have the data paths.
+    BuildPaths($winMode, Data => $FIG_Config::shrub_dir, qw(Inputs Inputs/GenomeData Inputs/SubSystemData LoadFiles));
+    # Are we using a local DNA repository?
+    if (! $opt->dna) {
+        # Yes. Build that, too.
+        BuildPaths($winMode, Data => $FIG_Config::shrub_dir, qw(DnaRepo));
+    }
+    # Insure we have the web paths.
+    BuildPaths($winMode, Web => $FIG_Config::web_dir, qw(img Tmp logs));
+}
+# Do we have a Web project?
+my $weblib = "$FIG_Config::web_dir/lib";
+if (-d $weblib) {
+    # Yes. Create the web configuration file.
+    my $webConfig = "$weblib/Web_Config.pm";
+    # Open the web configuration file for output.
+    if (! open(my $oh, ">$webConfig")) {
+        # Web system problems are considered warnings, not fatal errors.
+        warn "Could not open web configuration file $webConfig: $!\n";
     } else {
-        # Compute the FIG_Config file name.
-        my $outputName = $opt->fc;
-        # Fix the slash craziness for Windows.
-        $outputName =~ tr/\\/\//;
-        # If the name is pathless, put it in the config directory.
-        if ($outputName !~ /\//) {
-            $outputName = "$projDir/config/$outputName";
-        }
-        # If we are overwriting the real FIG_Config, back it up.
-        if (-f $fig_config_name && $outputName eq $fig_config_name) {
-            print "Backing up $fig_config_name.\n";
-            copy $fig_config_name, "$projDir/config/FIG_Config_old.pm";
-        }
-        # Write the FIG_Config.
-        print "Writing configuration to $outputName.\n";
-        WriteAllParams($outputName, \%modules, $projDir, $dataRootDir, $webRootDir, $winMode, $opt);
-        # Execute it to get the latest variable values.
-        print "Reading back new configuration.\n";
-        RunFigConfig($outputName);
+        # Write the file.
+        print $oh "\n";
+        print $oh "use lib\n";
+        print $oh "    '" .	join("',\n    '", @FIG_Config::libs) . "';\n";
+        print $oh "\n";
+        print $oh "use FIG_Config;\n";
+        print $oh "\n";
+        print $oh "1;\n";
+        # Close the file.
+        close $oh;
+        print "Web configuration file $webConfig created.\n";
     }
-    # Are we setting up default data directories?
-    if ($opt->dirs) {
-        # Yes. Insure we have the data paths.
-        BuildPaths($winMode, Data => $FIG_Config::shrub_dir, qw(Inputs Inputs/GenomeData Inputs/SubSystemData LoadFiles));
-        # Are we using a local DNA repository?
-        if (! $opt->dna) {
-            # Yes. Build that, too.
-            BuildPaths($winMode, Data => $FIG_Config::shrub_dir, qw(DnaRepo));
-        }
-        # Insure we have the web paths.
-        BuildPaths($winMode, Web => $FIG_Config::web_dir, qw(img Tmp logs));
+}
+# If this is Eclipse mode, we need to set up the PERL libraries and
+# execution paths.
+if ($eclipseMode) {
+    # Set up the paths and PERL libraries.
+    WriteAllConfigs($winMode, \%modules, $projDir, $opt);
+    if (! $winMode) {
+        # For an Eclipse Mac installation, we have to set up binary versions of the scripts
+        # and make the
+        SetupBinaries($projDir, \%modules, $opt);
+        # We also need to fix the CGI permissions.
+        SetupCGIs($FIG_Config::web_dir, $opt);
     }
-    # Do we have a Web project?
-    my $weblib = "$FIG_Config::web_dir/lib";
-    if (-d $weblib) {
-        # Yes. Create the web configuration file.
-        my $webConfig = "$weblib/Web_Config.pm";
-        # Open the web configuration file for output.
-        if (! open(my $oh, ">$webConfig")) {
-            # Web system problems are considered warnings, not fatal errors.
-            warn "Could not open web configuration file $webConfig: $!\n";
-        } else {
-            # Write the file.
-            print $oh "\n";
-            print $oh "    use lib\n";
-            print $oh "        '" .	join("',\n        '", @FIG_Config::libs) . "';\n";
-            print $oh "\n";
-            print $oh "    use FIG_Config;\n";
-            print $oh "\n";
-            print $oh "1;\n";
-            # Close the file.
-            close $oh;
-            print "Web configuration file $webConfig created.\n";
-        }
-    }
-    # If this is Eclipse mode, we need to set up the PERL libraries and
-    # execution paths.
-    if ($eclipseMode) {
-        # Set up the paths and PERL libraries.
-        WriteAllConfigs($winMode, \%modules, $projDir, $opt);
-        if (! $winMode) {
-            # For an Eclipse Mac installation, we have to set up binary versions of the scripts
-            # and make the
-            SetupBinaries($projDir, \%modules, $opt);
-            # We also need to fix the CGI permissions.
-            SetupCGIs($FIG_Config::web_dir, $opt);
-        }
-    }
-    # Now we need to create the pull-all script.
-    my $fileName = "$projDir/pull-all" . ($FIG_Config::win_mode ? ".cmd" : ".sh");
-    open(my $oh, ">$fileName") || die "Could not open $fileName: $!";
-    # The pushd command in windows can't handle forward slashes in directory names,
-    # so if this is windows we have to translate.
-    my $projDirForPush = $projDir;
-    if ($winMode) {
-        $projDirForPush =~ tr/\//\\/;
-    }
-    # Now write the commands to run through the directories and pull.
-    print $oh "echo Pulling project directory.\n";
-    print $oh "pushd $projDirForPush\n";
+}
+# Now we need to create the pull-all script.
+my $fileName = "$projDir/pull-all" . ($FIG_Config::win_mode ? ".cmd" : ".sh");
+open(my $oh, ">$fileName") || die "Could not open $fileName: $!";
+# The pushd command in windows can't handle forward slashes in directory names,
+# so if this is windows we have to translate.
+my $projDirForPush = $projDir;
+if ($winMode) {
+    $projDirForPush =~ tr/\//\\/;
+}
+# Now write the commands to run through the directories and pull.
+print $oh "echo Pulling project directory.\n";
+print $oh "pushd $projDirForPush\n";
+print $oh "git pull\n";
+for my $module (@FIG_Config::modules) {
+    print $oh "echo Pulling $module\n";
+    print $oh "cd $modules{$module}\n";
     print $oh "git pull\n";
-    for my $module (@FIG_Config::modules) {
-        print $oh "echo Pulling $module\n";
-        print $oh "cd $modules{$module}\n";
-        print $oh "git pull\n";
+}
+# Restore the old directory.
+print $oh "popd\n";
+close $oh;
+print "Pull-all script written to $fileName.\n";
+# Finally, check for the links file.
+if ($opt->links) {
+    # Determine the output location for the links file.
+    my $linksDest = "$FIG_Config::web_dir/Links.html";
+    # Do we need to generate a links file?
+    if (-f $linksDest) {
+        # No need. We already have one.
+        print "$linksDest file already exists-- not updated.\n";
+    } else {
+        # We don't have a links file yet.
+        print "Generating new $linksDest.\n";
+        # Find the source copy of the file.
+        my $linksSrc = "$FIG_Config::web_dir/lib/Links.html";
+        # Copy it to the destination.
+        copy $linksSrc, $linksDest;
+        print "$linksDest file created.\n";
     }
-    # Restore the old directory.
-    print $oh "popd\n";
-    close $oh;
-    print "Pull-all script written to $fileName.\n";
-    # Finally, check for the links file.
-    if ($opt->links) {
-        # Determine the output location for the links file.
-        my $linksDest = "$FIG_Config::web_dir/Links.html";
-        # Do we need to generate a links file?
-        if (-f $linksDest) {
-            # No need. We already have one.
-            print "$linksDest file already exists-- not updated.\n";
-        } else {
-            # We don't have a links file yet.
-            print "Generating new $linksDest.\n";
-            # Find the source copy of the file.
-            my $linksSrc = "$FIG_Config::web_dir/lib/Links.html";
-            # Copy it to the destination.
-            copy $linksSrc, $linksDest;
-            print "$linksDest file created.\n";
-        }
-    }
-    print "All done.\n";
+}
+print "All done.\n";
 
 
 =head2 Internal Subroutines

@@ -17,13 +17,13 @@
 #
 
 
-    use strict;
-    use warnings;
-    use FIG_Config;
-    use ScriptUtils;
-    use Loader;
-    use File::Copy::Recursive;
-    use Stats;
+use strict;
+use warnings;
+use FIG_Config;
+use ScriptUtils;
+use Loader;
+use File::Copy::Recursive;
+use Stats;
 
 =head1 Create Mini-Seed
 
@@ -44,99 +44,99 @@ The input file should contain a list of subsystem names, one per line, followed 
 
 =cut
 
-    $| = 1; ## Prevent buffering on STDOUT.
-    # Create the statistics object.
-    my $stats = Stats->new();
-    # Get the command-line parameters.
-    my $opt = ScriptUtils::Opts('fig_disk output_fig_disk', ScriptUtils::ih_options(),
-            );
-    # Get the SEED FIGdisk.
-    my $figDisk = $ARGV[0];
-    if (! $figDisk) {
-        die "You must specify a SEED FIGdisk.";
-    } elsif (! -d $figDisk) {
-        die "SEED directory $figDisk not found.";
-    }
-    # Get the organisms and subsystem directories.
-    my $orgDisk = "$figDisk/FIG/Data/Organisms";
-    my $subDisk = "$figDisk/FIG/Data/Subsystems";
-    if (! -d $orgDisk || ! -d $subDisk) {
-        die "$figDisk does not appear to be a SEED FIGdisk";
-    }
-    # Get the output FIGdisk.
-    my $outFigDisk = $ARGV[1];
-    if (! $outFigDisk) {
-        die "You must specify an output FIGdisk.";
-    } elsif (! -d $outFigDisk) {
-        print "Creating output FIG disk $outFigDisk.\n";
-        File::Copy::Recursive::pathmk($outFigDisk);
-    }
-    # Insure the output subdirectories exist.
-    my $outOrgDisk = "$outFigDisk/FIG/Data/Organisms";
-    my $outSubDisk = "$outFigDisk/FIG/Data/Subsystems";
-    if (! -d $outOrgDisk) {
-        print "Creating output directory for genomes $outOrgDisk.\n";
-        File::Copy::Recursive::pathmk($outOrgDisk);
-    }
-    if (! -d $outSubDisk) {
-        print "Creating output directory for subsystems $outSubDisk.\n";
-        File::Copy::Recursive::pathmk($outSubDisk);
-    }
-    # Open the input file.
-    my $ih = ScriptUtils::IH($opt->input);
-    # Loop through the subsystems.
-    my $done = 0;
-    while (! eof $ih && ! $done) {
-        my $subsystem = <$ih>;
-        chomp $subsystem;
-        $stats->Add(lineIn => 1);
-        # Is this an end marker?
-        if (substr($subsystem, 0, 2) eq '//') {
-            # Yes. Stop this loop.
-            $done = 1;
+$| = 1; ## Prevent buffering on STDOUT.
+# Create the statistics object.
+my $stats = Stats->new();
+# Get the command-line parameters.
+my $opt = ScriptUtils::Opts('fig_disk output_fig_disk', ScriptUtils::ih_options(),
+        );
+# Get the SEED FIGdisk.
+my $figDisk = $ARGV[0];
+if (! $figDisk) {
+    die "You must specify a SEED FIGdisk.";
+} elsif (! -d $figDisk) {
+    die "SEED directory $figDisk not found.";
+}
+# Get the organisms and subsystem directories.
+my $orgDisk = "$figDisk/FIG/Data/Organisms";
+my $subDisk = "$figDisk/FIG/Data/Subsystems";
+if (! -d $orgDisk || ! -d $subDisk) {
+    die "$figDisk does not appear to be a SEED FIGdisk";
+}
+# Get the output FIGdisk.
+my $outFigDisk = $ARGV[1];
+if (! $outFigDisk) {
+    die "You must specify an output FIGdisk.";
+} elsif (! -d $outFigDisk) {
+    print "Creating output FIG disk $outFigDisk.\n";
+    File::Copy::Recursive::pathmk($outFigDisk);
+}
+# Insure the output subdirectories exist.
+my $outOrgDisk = "$outFigDisk/FIG/Data/Organisms";
+my $outSubDisk = "$outFigDisk/FIG/Data/Subsystems";
+if (! -d $outOrgDisk) {
+    print "Creating output directory for genomes $outOrgDisk.\n";
+    File::Copy::Recursive::pathmk($outOrgDisk);
+}
+if (! -d $outSubDisk) {
+    print "Creating output directory for subsystems $outSubDisk.\n";
+    File::Copy::Recursive::pathmk($outSubDisk);
+}
+# Open the input file.
+my $ih = ScriptUtils::IH($opt->input);
+# Loop through the subsystems.
+my $done = 0;
+while (! eof $ih && ! $done) {
+    my $subsystem = <$ih>;
+    chomp $subsystem;
+    $stats->Add(lineIn => 1);
+    # Is this an end marker?
+    if (substr($subsystem, 0, 2) eq '//') {
+        # Yes. Stop this loop.
+        $done = 1;
+    } else {
+        # Denormalize the subsystem name.
+        $subsystem =~ tr/ /_/;
+        # Insure it exists.
+        if (! -d "$subDisk/$subsystem") {
+            print "Subsystem directory $subsystem not found.\n";
+            $stats->Add(subNotFound => 1);
         } else {
-            # Denormalize the subsystem name.
-            $subsystem =~ tr/ /_/;
-            # Insure it exists.
-            if (! -d "$subDisk/$subsystem") {
-                print "Subsystem directory $subsystem not found.\n";
-                $stats->Add(subNotFound => 1);
-            } else {
-                # Copy the subsystem directory.
-                print "Copying $subsystem.\n";
-                my $fileCount = File::Copy::Recursive::dircopy("$subDisk/$subsystem", "$outSubDisk/$subsystem");
-                $stats->Add(subCopied => 1);
-                $stats->Add(subFilesCopied => $fileCount);
-            }
+            # Copy the subsystem directory.
+            print "Copying $subsystem.\n";
+            my $fileCount = File::Copy::Recursive::dircopy("$subDisk/$subsystem", "$outSubDisk/$subsystem");
+            $stats->Add(subCopied => 1);
+            $stats->Add(subFilesCopied => $fileCount);
         }
     }
-    # Now loop through the genomes.
-    while (! eof $ih) {
-        my $genome = <$ih>;
-        chomp $genome;
-        $stats->Add(lineIn => 1);
-        # Insure the genome exists.
-        my $orgDir = "$orgDisk/$genome";
-        if (! -d $orgDir) {
-            print "Genome directory $genome not found.\n";
-            $stats->Add(orgNotFound => 1);
-        } else {
-            # Now we want to copy the genome directory. We purposefully skip over
-            # scenarios and models, which requires we look at the directory children ourselves.
-            my $outOrgDir = "$outOrgDisk/$genome";
-            print "Copying $genome.\n";
-            if (! -d $outOrgDir) {
-                File::Copy::Recursive::pathmk($outOrgDir);
-            }
-            # Get the genome components.
-            my @children = grep { substr($_,0,1) ne '.' && $_ ne 'Scenarios' && $_ ne 'Models'} Loader::OpenDir($orgDir);
-            # Loop through them, copying.
-            for my $child (@children) {
-                my $fileCount = File::Copy::Recursive::rcopy("$orgDir/$child", "$outOrgDir/$child");
-                $stats->Add(orgFilesCopied => $fileCount);
-            }
-            $stats->Add(orgCopied => 1);
+}
+# Now loop through the genomes.
+while (! eof $ih) {
+    my $genome = <$ih>;
+    chomp $genome;
+    $stats->Add(lineIn => 1);
+    # Insure the genome exists.
+    my $orgDir = "$orgDisk/$genome";
+    if (! -d $orgDir) {
+        print "Genome directory $genome not found.\n";
+        $stats->Add(orgNotFound => 1);
+    } else {
+        # Now we want to copy the genome directory. We purposefully skip over
+        # scenarios and models, which requires we look at the directory children ourselves.
+        my $outOrgDir = "$outOrgDisk/$genome";
+        print "Copying $genome.\n";
+        if (! -d $outOrgDir) {
+            File::Copy::Recursive::pathmk($outOrgDir);
         }
+        # Get the genome components.
+        my @children = grep { substr($_,0,1) ne '.' && $_ ne 'Scenarios' && $_ ne 'Models'} Loader::OpenDir($orgDir);
+        # Loop through them, copying.
+        for my $child (@children) {
+            my $fileCount = File::Copy::Recursive::rcopy("$orgDir/$child", "$outOrgDir/$child");
+            $stats->Add(orgFilesCopied => $fileCount);
+        }
+        $stats->Add(orgCopied => 1);
     }
-    # Tell the user we're done.
-    print "All done.\n" . $stats->Show();
+}
+# Tell the user we're done.
+print "All done.\n" . $stats->Show();
