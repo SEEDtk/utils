@@ -176,7 +176,7 @@ for my $module (@FIG_Config::modules) {
 }
 # Make sure we have the data directory if there is no data root
 # in the command-line parameters.
-if (! defined $FIG_Config::shrub_dir) {
+if (! defined $FIG_Config::data) {
     $dataRootDir = FixPath($ARGV[0]);
     if (! defined $dataRootDir) {
         die "A data root directory is required if no current value exists in FIG_Config.";
@@ -221,11 +221,11 @@ if ($opt->fc eq 'off') {
 # Are we setting up default data directories?
 if ($opt->dirs) {
     # Yes. Insure we have the data paths.
-    BuildPaths($winMode, Data => $FIG_Config::shrub_dir, qw(Inputs Inputs/GenomeData Inputs/SubSystemData LoadFiles));
+    BuildPaths($winMode, Data => $FIG_Config::data, qw(Inputs Inputs/GenomeData Inputs/SubSystemData LoadFiles));
     # Are we using a local DNA repository?
     if (! $opt->dna) {
         # Yes. Build that, too.
-        BuildPaths($winMode, Data => $FIG_Config::shrub_dir, qw(DnaRepo));
+        BuildPaths($winMode, Data => $FIG_Config::data, qw(DnaRepo));
     }
     # Insure we have the web paths.
     BuildPaths($winMode, Web => $FIG_Config::web_dir, qw(img Tmp logs));
@@ -429,7 +429,7 @@ sub WriteAllParams {
     # Now comes the Shrub configuration section.
     Env::WriteLines($oh, "", "", "# SHRUB CONFIGURATION", "");
     Env::WriteParam($oh, 'root directory for Shrub data files (should have subdirectories "Inputs" (optional) and "LoadFiles" (required))',
-            shrub_dir => "$dataRootDir");
+            data => "$dataRootDir");
     Env::WriteParam($oh, 'full name of the Shrub DBD XML file', shrub_dbd => "$modules->{ERDB}/ShrubDBD.xml");
     Env::WriteParam($oh, 'Shrub database signon info (name/password)', userData => "seed/");
     Env::WriteParam($oh, 'name of the Shrub database (empty string to use the default)', shrubDB => "");
@@ -575,6 +575,12 @@ sub WriteAllConfigs {
         # Here we are in Windows and PERL scripts are not set up as
         # an executable type. We need to fix that.
         print $oh "SET PATHEXT=%PATHEXT%;.PL\n"
+    }
+    # Add the environment variable that tells us what our environment is.
+    if ($winMode) {
+        print $oh "SET STK_TYPE=Windows";
+    } else {
+        print $oh "export STK_TYPE=Mac";
     }
     # Close the output file.
     close $oh;

@@ -232,19 +232,22 @@ sub Show {
     my $map = $self->{Map};
     # Get the key list.
     my @keys = sort keys %{$map};
-    # Convert all the statistics to integers.
-    my %intMap;
-    for my $statKey (@keys) {
-        $intMap{$statKey} = sprintf("%d", $map->{$statKey});
-    }
-    # Compute the key size.
-    my $keySize = Max(map { length $_ } @keys) + 1;
-    my $statSize = Max(map { length "$intMap{$_}" } @keys) + 1;
-    # Loop through the statistics.
-    for my $statKey (@keys) {
-        # Add the statistic and its value.
-        $retVal .= Pad($statKey, $keySize) .
-                   Pad($intMap{$statKey}, $statSize, 'left') . "\n";
+    # Only proceed if there are any keys to display.
+    if (scalar @keys) {
+        # Convert all the statistics to integers.
+        my %intMap;
+        for my $statKey (@keys) {
+            $intMap{$statKey} = sprintf("%d", $map->{$statKey});
+        }
+        # Compute the key size.
+        my $keySize = Max(map { length $_ } @keys) + 1;
+        my $statSize = Max(map { length "$intMap{$_}" } @keys) + 1;
+        # Loop through the statistics.
+        for my $statKey (@keys) {
+            # Add the statistic and its value.
+            $retVal .= Pad($statKey, $keySize) .
+                       Pad($intMap{$statKey}, $statSize, 'left') . "\n";
+        }
     }
     # Display the messages.
     $retVal .= "\n" . $self->{Messages} . "\n";

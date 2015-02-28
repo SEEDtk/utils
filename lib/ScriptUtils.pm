@@ -21,32 +21,29 @@ package ScriptUtils;
     use warnings;
     use Getopt::Long::Descriptive;
 
-#
-# Copyright (c) 2003-2015 University of Chicago and Fellowship
-# for Interpretations of Genomes. All Rights Reserved.
-#
-# This file is part of the SEED Toolkit.
-#
-# The SEED Toolkit is free software. You can redistribute
-# it and/or modify it under the terms of the SEED Toolkit
-# Public License.
-#
-# You should have received a copy of the SEED Toolkit Public License
-# along with this program; if not write to the University of Chicago
-# at info@ci.uchicago.edu or the Fellowship for Interpretation of
-# Genomes at veronika@thefig.info or download a copy from
-# http://www.theseed.org/LICENSE.TXT.
-#
-
-
-package ScriptUtils;
-
-    use strict;
-    use warnings;
 
 =head1 Script Utilities
 
 This package contains utilities that are useful in coding SEEDtk command-line scripts.
+
+=head2 Special Methods
+
+=head3 WarnHandler
+
+The Perl EPIC debugger does not handle warnings properly. This method fixes the problem.
+It is hooked into the warning signal if the environment variable STK_TYPE is not set.
+That variable is set by the various C<user-env> scripts, which are more or less required
+in the non-debugging environments. If it is executed accidentally, it does no harm.
+
+=cut
+
+sub WarnHandler {
+    print STDERR @_ ;
+}
+if (! $ENV{STK_TYPE}) {
+    $SIG{'__WARN__'} = 'WarnHandler';
+}
+
 
 =head2 Public Methods
 
