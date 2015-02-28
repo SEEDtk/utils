@@ -474,7 +474,7 @@ there is a change to your PERL5LIB or PATH environment variables, or there is a 
 change.
 
 After the first successful invocation, the only parameters you need are the command-line option
-C<eclipse> (and optionally C<gfw>). Create a new run configuration with just these arguments in it 
+C<eclipse> (and optionally C<gfw>). Create a new run configuration with just these arguments in it
 so you have one handy.
 
 =head2 Preparing the Mac
@@ -615,6 +615,35 @@ Mark the web directory folder as shared. This can be done with Finder.
 
 Once you've done all this, reboot the system to get the configuration changes
 stored and go to L<http://fig.localhost> in your browser.
+
+=head2 Creating Test Scripts
+
+Sometimes it helps to write simple scripts for unit testing. Such scripts are not
+intended to be included in the final project.
+
+All such scripts should use L<ScriptUtils>. Even if you are not using any of its
+methods, including the module insures you will see warning messages in the Eclipse
+debugger.
+
+The GIT configuration for each project is set up to ignore scripts that begin with
+C<Test_>. Thus, if you give your script a name like C<Test_Unit1.pl> or even
+C<Test_1.pl>, it will not be included in the project when you commit or push.
+If you decide you want to keep the script, change its name to something more
+descriptive.
+
+=head1 External Tools
+
+Installation files for external tools are kept in the C<packages> directory of the
+main B<SEEDtk> project. Each tool is associated with a POD document that explains
+how to install it. These are listed below.
+
+=over 4
+
+=item *
+
+L<BLAST+|InstallBlast>
+
+=back
 
 =head1 Useful Links
 
