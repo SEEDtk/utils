@@ -430,7 +430,7 @@ sub WriteAllParams {
     my $packages = "$FIG_Config::proj/packages";
     my @toolDirs;
     if (opendir(my $dh, $packages)) {
-        @toolDirs = grep { -d "$packages/$_/bin" } readdir($dh);
+        @toolDirs = grep { substr($_,0,1) ne '.' && -d "$packages/$_/bin" } readdir($dh);
     }
     Env::WriteLines($oh, "", "# list of tool directories",
             "our \@tools = (" . join(", ", map { "'$projDir/packages/$_/bin'" } @toolDirs) .
