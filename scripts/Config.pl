@@ -418,6 +418,15 @@ sub WriteAllParams {
             "", "# list of project modules",
             "our \@modules = qw(" . join(" ", @FIG_Config::modules) . ");",
             );
+    # Set up the tool directories.
+    my $packages = "$FIG_Config::proj/packages";
+    my @toolDirs;
+    if (opendir(my $dh, $packages)) {
+        @toolDirs = grep { -d "$packages/$_/bin" } readdir($dh);
+    }
+    Env::WriteLines($oh, "", "# list of tool directories",
+            "our \@tools = (" . join(", ", map { "'$projDir/packages/$_/bin'" } @toolDirs) .
+                    ");");
     # Now comes the Shrub configuration section.
     Env::WriteLines($oh, "", "", "# SHRUB CONFIGURATION", "");
     Env::WriteParam($oh, 'root directory for Shrub data files (should have subdirectories "Inputs" (optional) and "LoadFiles" (required))',
