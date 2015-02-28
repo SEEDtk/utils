@@ -67,9 +67,10 @@ sub executable_for {
         $delim = ':';
         @suffixes = ('');
     }
-    # Loop through the path directories.
+    # Loop through the tool and path directories.
     my ($retVal, $path);
     my @paths = split $delim, $ENV{PATH};
+    push @paths, @FIG_Config::tools;
     while (! $retVal && ($path = pop @paths)) {
         # Form the execution name.
         my $testName = File::Spec->catfile($path, $programName);
