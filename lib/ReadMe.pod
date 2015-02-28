@@ -633,8 +633,7 @@ descriptive.
 
 =head1 External Tools
 
-Installation files for external tools are kept in the C<packages> directory of the
-main B<SEEDtk> project. Each tool is associated with a POD document that explains
+Severla SEEDtk modules make use of external tools. Each tool is associated with a POD document that explains
 how to install it. These are listed below.
 
 =over 4
