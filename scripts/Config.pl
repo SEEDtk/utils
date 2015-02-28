@@ -267,13 +267,17 @@ if ($eclipseMode) {
     }
 }
 # Now we need to create the pull-all script.
-my $fileName = "$projDir/pull-all" . ($FIG_Config::win_mode ? ".cmd" : ".sh");
+my $fileName = ($winMode ? "$projDir/pull-all.cmd" : "$projDir/bin/pull-all");
 open(my $oh, ">$fileName") || die "Could not open $fileName: $!";
 # The pushd command in windows can't handle forward slashes in directory names,
 # so if this is windows we have to translate.
 my $projDirForPush = $projDir;
 if ($winMode) {
+	# Windows, so we translate.
     $projDirForPush =~ tr/\//\\/;
+} else {
+	# In Unix, we need the shebang.
+	print $oh "#!/usr/bin/env bash\n";
 }
 # Now write the commands to run through the directories and pull.
 print $oh "echo Pulling project directory.\n";
@@ -287,6 +291,10 @@ for my $module (@FIG_Config::modules) {
 # Restore the old directory.
 print $oh "popd\n";
 close $oh;
+# In Unix, set the permissions.
+if (! $winMode) {
+	chmod 0755, $fileName;
+}
 print "Pull-all script written to $fileName.\n";
 # Finally, check for the links file.
 if ($opt->links) {
@@ -552,6 +560,8 @@ sub WriteAllConfigs {
         if ($opt->gfw) {
             $paths .= ';%localappdata%\GitHub\PORTAB~1\cmd'
         }
+        # Add the project directory.
+        $paths .= ";$projDirForPush";
         print $oh "path $paths\n";
     } else {
         # On the Mac, we simply put the bin subdirectory in the path.
