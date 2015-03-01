@@ -174,6 +174,10 @@ for my $module (@FIG_Config::modules) {
     # Add it to the hash.
     $modules{$module} = $dir;
 }
+# Check for older files that use a different name for FIG_Config::data.
+if (! defined $FIG_Config::data && $FIG_Config::shrub_dir) {
+    $FIG_Config::data = $FIG_Config::shrub_dir;
+}
 # Make sure we have the data directory if there is no data root
 # in the command-line parameters.
 if (! defined $FIG_Config::data) {
@@ -273,11 +277,11 @@ open(my $oh, ">$fileName") || die "Could not open $fileName: $!";
 # so if this is windows we have to translate.
 my $projDirForPush = $projDir;
 if ($winMode) {
-	# Windows, so we translate.
+    # Windows, so we translate.
     $projDirForPush =~ tr/\//\\/;
 } else {
-	# In Unix, we need the shebang.
-	print $oh "#!/usr/bin/env bash\n";
+    # In Unix, we need the shebang.
+    print $oh "#!/usr/bin/env bash\n";
 }
 # Now write the commands to run through the directories and pull.
 print $oh "echo Pulling project directory.\n";
@@ -293,7 +297,7 @@ print $oh "popd\n";
 close $oh;
 # In Unix, set the permissions.
 if (! $winMode) {
-	chmod 0755, $fileName;
+    chmod 0755, $fileName;
 }
 print "Pull-all script written to $fileName.\n";
 # Finally, check for the links file.
@@ -430,7 +434,7 @@ sub WriteAllParams {
     my $packages = "$FIG_Config::proj/packages";
     my @toolDirs;
     if (opendir(my $dh, $packages)) {
-        @toolDirs = grep { -d "$packages/$_/bin" } readdir($dh);
+        @toolDirs = grep { substr($_,0,1) ne '.' && -d "$packages/$_/bin" } readdir($dh);
     }
     Env::WriteLines($oh, "", "# list of tool directories",
             "our \@tools = (" . join(", ", map { "'$projDir/packages/$_/bin'" } @toolDirs) .
