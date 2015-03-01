@@ -365,12 +365,12 @@ You typed the wrong password.
 =head3 pull-all
 
 Since there are many projects in the SEEDtk system, it can be generally tedious to update
-the source. In Unix environments, L<Config.pl> creates a shell script called C<pull-all.sh>
-that does a C<git pull> from all of the module directories in succession. This script must
-be sourced.
+the source. L<Config.pl> creates a shell script called C<pull-all> that does a C<git pull>
+from all of the module directories in succession. Simply enter
 
-    cd ~SEEDtk
-    source pull-all.sh
+    pull-all
+
+into the command line.
 
 =head1 Setting Up an Eclipse Environment
 
@@ -476,6 +476,11 @@ change.
 After the first successful invocation, the only parameters you need are the command-line option
 C<eclipse> (and optionally C<gfw>). Create a new run configuration with just these arguments in it
 so you have one handy.
+
+=head2 The user-env Script
+
+To use the command line on an Eclipse-based system, you must establish the proper environment.
+
 
 =head2 Preparing the Mac
 
