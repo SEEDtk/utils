@@ -6,8 +6,5 @@ This file contains Bruce's current to-do list.
 
     ## TODO Load the full coreseed into a new database
     ## TODO add a method for queries based on secondary fields
-    ## TODO remove variant 0 from subsystems
-    ## TODO add an unprivileged role description
     ## TODO update ReadMe with pull-all instructions and setup for a SEEDtk terminal in tools
-    ## TODO write general load script
 
