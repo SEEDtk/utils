@@ -43,6 +43,8 @@ this can be corrected.
 Find the location of the specified program in the execution path and return the fully-qualified
 name.
 
+=over 4
+
 =item programName
 
 Name of the program to find.
