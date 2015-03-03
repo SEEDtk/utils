@@ -559,7 +559,7 @@ listed in your L<FIG_Config>. To establish the environment, use
 You can then type commands directly into the command prompt without invoking
 PERL or using a C<.pl> extension. Use
 
-    source pull-all.sh
+    pull-all
 
 to pull down all the projects from GIT.
 
