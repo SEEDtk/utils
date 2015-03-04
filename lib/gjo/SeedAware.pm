@@ -16,7 +16,7 @@
 #
 
 
-package SeedAware;
+package gjo::SeedAware;
 
     use strict;
     use warnings;
