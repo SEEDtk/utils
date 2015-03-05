@@ -496,9 +496,9 @@ sub WriteAllParams {
 Write out the path and library configuration parameters for an
 Eclipse environment. This creates a C<user-env> file in the
 project directory and builds the C<.includepath> files for all
-the Eclipse projects. The C<user-env.sh> file is used in a
-command shel to set up environment variables for PERL includes and
-execution paths.
+the Eclipse projects. The C<user-env> file is used in a
+command shell to set up environment variables for PERL includes and
+execution paths and switch to the Data directory.
 
 This method presumes the B<FIG_Config> file has been updated and L</RunFigConfig> has
 been called to load its variables.
@@ -591,10 +591,12 @@ sub WriteAllConfigs {
     }
     # Add the environment variable that tells us what our environment is.
     if ($winMode) {
-        print $oh "SET STK_TYPE=Windows";
+        print $oh "SET STK_TYPE=Windows\n";
     } else {
-        print $oh "export STK_TYPE=Mac";
+        print $oh "export STK_TYPE=Mac\n";
     }
+    # Switch to the data directory.
+    print $oh "cd " . File::Spec->rel2abs($FIG_Config::data) . "\n";
     # Close the output file.
     close $oh;
     # If this is NOT Windows, fix the permissions.
