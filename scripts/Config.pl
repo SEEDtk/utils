@@ -790,8 +790,8 @@ sub SetupBinaries {
         }
     }
     # Now delete the obsolete wrappers.
-    openDir(my $dh, $binDir) || die "Could not open binary directory $binDir: $!";
-    my @badBins = grep { -f "$binDir/$_" && ! $wrappers{$_} } readdirr($dh);
+    opendir(my $dh, $binDir) || die "Could not open binary directory $binDir: $!";
+    my @badBins = grep { substr($_,0,1) ne '.' && -f "$binDir/$_" && ! $wrappers{$_} } readdir($dh);
     closedir $dh;
     for my $badBin (@badBins) {
         unlink("$binDir/$badBin");
