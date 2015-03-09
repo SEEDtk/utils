@@ -692,6 +692,19 @@ C<Test_1.pl>, it will not be included in the project when you commit or push.
 If you decide you want to keep the script, change its name to something more
 descriptive.
 
+=head1 Random Notes
+
+=over 4
+
+=item *
+
+When updating Java, you must update the Java Development Kit, not the Java
+Runtime. Eclipse looks for the JDK when selecting its Java Virtual Machine.
+
+
+
+=back
+
 =head1 External Tools
 
 Severla SEEDtk modules make use of external tools. Each tool is associated with a POD document that explains
