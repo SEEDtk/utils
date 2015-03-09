@@ -477,9 +477,65 @@ After the first successful invocation, the only parameters you need are the comm
 C<eclipse> (and optionally C<gfw>). Create a new run configuration with just these arguments in it
 so you have one handy.
 
-=head2 The user-env Script
+=head2 Using the Command Line in Eclipse
 
 To use the command line on an Eclipse-based system, you must establish the proper environment.
+The command-line is accessed via a terminal window. On the Mac, the terminal window is a common
+application. Under Windows, you can access a terminal window inside Eclipse by installing the
+TCF Terminal add-on.
+
+To set up the command-line environment, you need to run the C<user-env> script. This script sets
+up the proper paths and connects the SEEDtk libraries for PERL. Once this command is entered,
+the SEEDtk scripts are in your path and can be invoked from any directory. The script will
+switch you automatically to the SEEDtk data directory so you can access your data files more
+easily.
+
+The problem is, the C<user-env> script is in your SEEDtk project directory and the terminal
+program won't be able to find it on its own.
+
+From the command line, you can update all of your projects from the GIT hub using the
+pull-all command
+
+    pull-all
+
+You can load the database using the L<ShrubLoad.pl> command. The following invocation
+erases the current content of the database, updates the DBD, and then loads all of the
+subsystems and genomes in the C<Inputs> subdirectory of your data directory.
+
+    ShrubLoad --clear --store
+
+The follwing invocation loads the new genomes and subsystems found in the L<ExchangeFormat>
+repository at C</vol/updates/seedtk.repo>.
+
+    ShrubLoad --repo=/vol/updates/seedtk.repo
+
+Any command scripts you create in one of the project script directories will also be available
+from the command line.
+
+If you recently added new commands or updated your configuration, you can also directly run
+the L<Config.pl> script.
+
+    Config --eclipse=SEEDtk
+
+
+=head3 Invoking user-env in Windows
+
+In Windows, you can start the TCF terminal add-on in the proper directory by selecting the
+SEEDtk project in the Eclipse navigation pane before clicking the terminal icon. Then
+simply type
+
+    user-env
+
+and the environment will be set up for you.
+
+=head3 Invoking user-env on the Mac
+
+On the Mac, you must enter the full path to the scrit, and you have to source it.
+
+    source /homes/fig/GIT/SEEDtk/user-env.sh
+
+To make the process easier, this command is displayed whenever you run the L<Config.pl>
+script.
 
 
 =head2 Preparing the Mac

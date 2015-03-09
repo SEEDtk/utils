@@ -319,6 +319,14 @@ if ($opt->links) {
     }
 }
 print "All done.\n";
+# Display the user-env command syntax.
+if ($opt->eclipse) {
+    my $cmd = "$FIG_Config::proj/user-env";
+    if (! $winMode) {
+        $cmd = "source $cmd.sh";
+    }
+    print "\nUse\n\n    $cmd\n\nto establish a command-line environment.\n";
+}
 
 
 =head2 Internal Subroutines
@@ -753,11 +761,14 @@ sub SetupBinaries {
         File::Path::make_path($binDir);
         print "$binDir created.\n";
     }
+    # This will contain a list of the wrappers we create. We prime it with our system
+    # script names.
+    my %wrappers = ('pull-all' => 1);
     # Loop through the modules.
     for my $module (keys %$modules) {
         # Get the scripts for this module.
         my $scriptDir = "$modules->{$module}/scripts";
-        opendir(my $dh, $scriptDir) || die "Could not open script directory $scriptDir.";
+        opendir(my $dh, $scriptDir) || die "Could not open script directory $scriptDir: $1";
         my @scripts = grep { substr($_, -3, 3) eq '.pl' } readdir($dh);
         closedir $dh;
         # Loop through them, creating the wrappers.
@@ -774,7 +785,17 @@ sub SetupBinaries {
             my @finfo = stat $fileName;
             my $newMode = ($finfo[2] & 0777) | 0111;
             chmod $newMode, $fileName;
+            # Denote we created this file.
+            $wrappers{$binaryName} = 1;
         }
+    }
+    # Now delete the obsolete wrappers.
+    openDir(my $dh, $binDir) || die "Could not open binary directory $binDir: $!";
+    my @badBins = grep { -f "$binDir/$_" && ! $wrappers{$_} } readdirr($dh);
+    closedir $dh;
+    for my $badBin (@badBins) {
+        unlink("$binDir/$badBin");
+        print "Obsolete script $badBin deleted.\n";
     }
 }
 
