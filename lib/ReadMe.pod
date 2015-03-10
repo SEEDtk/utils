@@ -493,6 +493,27 @@ easily.
 The problem is, the C<user-env> script is in your SEEDtk project directory and the terminal
 program won't be able to find it on its own.
 
+=head3 Invoking user-env in Windows
+
+In Windows, you can start the TCF terminal add-on in the proper directory by selecting the
+SEEDtk project in the Eclipse navigation pane before clicking the terminal icon. Then
+simply type
+
+    user-env
+
+and the environment will be set up for you.
+
+=head3 Invoking user-env on the Mac
+
+On the Mac, you must enter the full path to the scrit, and you have to source it.
+
+    source /homes/fig/GIT/SEEDtk/user-env.sh
+
+To make the process easier, this command is displayed whenever you run the L<Config.pl>
+script.
+
+=head3 Command-Line Examples
+
 From the command line, you can update all of your projects from the GIT hub using the
 pull-all command
 
@@ -519,26 +540,6 @@ If you recently added new commands or updated your configuration, you can also d
 the L<Config.pl> script.
 
     Config --eclipse=SEEDtk
-
-
-=head3 Invoking user-env in Windows
-
-In Windows, you can start the TCF terminal add-on in the proper directory by selecting the
-SEEDtk project in the Eclipse navigation pane before clicking the terminal icon. Then
-simply type
-
-    user-env
-
-and the environment will be set up for you.
-
-=head3 Invoking user-env on the Mac
-
-On the Mac, you must enter the full path to the scrit, and you have to source it.
-
-    source /homes/fig/GIT/SEEDtk/user-env.sh
-
-To make the process easier, this command is displayed whenever you run the L<Config.pl>
-script.
 
 
 =head2 Preparing the Mac
