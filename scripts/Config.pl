@@ -284,6 +284,7 @@ if ($winMode) {
     print $oh "#!/usr/bin/env bash\n";
 }
 # Now write the commands to run through the directories and pull.
+print $oh "\@echo off\n";
 print $oh "echo Pulling project directory.\n";
 print $oh "pushd $projDirForPush\n";
 print $oh "git pull\n";
@@ -573,7 +574,9 @@ sub WriteAllConfigs {
             $paths .= ';%localappdata%\GitHub\PORTAB~1\cmd'
         }
         # Add the project directory.
-        $paths .= ";$projDirForPush";
+        my $projDirForPath = $projDir;
+        $projDirForPath =~ tr/\//\\/;
+        $paths .= ";$projDirForPath";
         print $oh "path $paths\n";
     } else {
         # On the Mac, we simply put the bin subdirectory in the path.
