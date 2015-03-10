@@ -498,6 +498,9 @@ pull-all command
 
     pull-all
 
+Under Windows, if you get messages telling you the C<git> command cannot be found,
+run L<Config.pl> with the C<--gfw> option to get GIT into your path.
+
 You can load the database using the L<ShrubLoad.pl> command. The following invocation
 erases the current content of the database, updates the DBD, and then loads all of the
 subsystems and genomes in the C<Inputs> subdirectory of your data directory.
@@ -602,35 +605,6 @@ to do this all the time, just at major points when the code is stable).
 To get the latest source from GITHUB, you can select the I<Pull> option. You
 can select multiple projects at the same time when doing a pull, which makes it
 very convenient.
-
-=head2 Starting a Mac Command Shell
-
-To start a command shell on the Mac, simply navigate to the project directory
-(usually something ending in C<SEEDtk>). You can find the project directory
-by looking at the properties of the B<SEEDtk> project in Eclipse. It is also
-listed in your L<FIG_Config>. To establish the environment, use
-
-    source user-env.sh
-
-You can then type commands directly into the command prompt without invoking
-PERL or using a C<.pl> extension. Use
-
-    pull-all
-
-to pull down all the projects from GIT.
-
-=head2 Starting a Windows Command Shell
-
-To start a command shell under Windows, you also navigate to the project
-directory. To establish the proper execution search paths, enter
-
-    user-env
-
-Once this is done, you can use
-
-    pull-all
-
-to pull all the projects from GIT.
 
 =head2 Activating the Development Web Site
 
