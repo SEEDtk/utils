@@ -282,7 +282,7 @@ sub OpenFile {
     # Get the statistics object.
     my $stats = $self->{stats};
     # Open the file for input.
-    open(my $retVal, "<$fileName") || die "Could not open $type file: $!";
+    open(my $retVal, "<$fileName") || die "Could not open $type file $fileName: $!";
     $stats->Add("$type-file" => 1);
     # Return the handle.
     return $retVal;

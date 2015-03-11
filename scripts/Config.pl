@@ -480,6 +480,20 @@ sub WriteAllParams {
         GeneratePathFix($oh, $winMode, scripts => 'PATH', @paths);
         # Do the same with PERL5LIB.
         GeneratePathFix($oh, $winMode, libraries => 'PERL5LIB', @libs, "$FIG_Config::proj/config");
+        if (! $winMode) {
+        	# On the Mac, we need to fix the MySQL library path.
+        	opendir(my $dh, "/usr/local") || die "Could not perform MySQL directory search.";
+        	my ($libdir) = grep { $_ =~ /^mysql-\d+/ } readdir $dh;
+        	if ($libdir) {
+        		Env::WriteLines($oh, "", "# Set DYLD path for mysql",
+        				"\$ENV{DYLD_LIBRARY_PATH} = \"/usr/local/$libdir/lib\";");
+        	}
+        } else {
+        	# On Windows, we need to upgrade that PATHEXT.
+        	Env::WriteLines($oh, "", "# Insure PERL is executable.",
+        			"unless (\$ENV{PATHEXT} =~ /\.pl/i) {",
+        			"    \$ENV{PATHEXT} .= ';.pl';");
+        }
     }
 
     # Write the trailer.
