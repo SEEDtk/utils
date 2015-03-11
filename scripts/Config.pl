@@ -474,21 +474,12 @@ sub WriteAllParams {
     }
     Env::WriteParam($oh, 'location of the DNA repository', shrub_dna => $dnaRepo);
     ## Put new Shrub parameters here.
-    if ($opt->eclipse && $winMode) {
-        # For a Windows Eclipse project, we need to convince FIG_Config to modify the path.
-        my $newPath = Env::BuildPathList($winMode, ';', @scripts);
-        my $newPathLen = length($newPath);
-        # Now we have the text and length of the new path string. Escape any backslashes
-        # in the path string and convert it to a quoted string.
-        $newPath =~ s/\\/\\\\/g;
-        $newPath = '"' . $newPath . '"';
-        # Append the code to fix the path.
-        Env::WriteLines($oh, "",
-            "# Insure the path has our scripts in it.",
-            "my \$newPath = $newPath;",
-            "if (substr(\$ENV{PATH}, 0, $newPathLen) ne \$newPath) {",
-            "    \$ENV{PATH} = \"\$newPath;\$ENV{PATH}\";",
-            "}");
+    if ($opt->eclipse) {
+        # For an Eclipse project, we need to convince FIG_Config to modify the path and the libpath.
+        my @paths = ($winMode ? (@scripts) : "$FIG_Config::proj/bin");
+        GeneratePathFix($oh, $winMode, scripts => 'PATH', @paths);
+        # Do the same with PERL5LIB.
+        GeneratePathFix($oh, $winMode, libraries => 'PERL5LIB', @libs, "$FIG_Config::proj/config");
     }
 
     # Write the trailer.
@@ -497,6 +488,62 @@ sub WriteAllParams {
     close $oh;
 }
 
+=head3 GeneratePathFix
+
+    GeneratePathFix($oh, $winMode, $type => $var, @paths);
+
+Generate the FIG_Config PERL code to update an environment variable with new
+path information. This is used for both the system search path and
+the PERL module libraries.
+
+=over 4
+
+=item oh
+
+Open output handle for the code lines generated.
+
+=item winMode
+
+TRUE if this is Windows, FALSE otherwise.
+
+=item type
+
+Type of thing being added to the environment variable value, plural, for comments.
+
+=item var
+
+Name of the environment variable being updated.
+
+=item paths
+
+List of the path elements to add to the environment variable.
+
+=back
+
+=cut
+
+sub GeneratePathFix {
+    # Get the parameters.
+    my ($oh, $winMode, $type => $var, @paths) = @_;
+    # Compute the delimiter.
+    my $delim = ($winMode ? ';' : ':');
+    # Create the string to add to the path.
+    my $newPath = Env::BuildPathList($winMode, $delim, @paths);
+    my $newPathLen = length($newPath);
+    # Now we have the text and length of the new path string. Escape any backslashes
+    # in the path string and convert it to a quoted string.
+    $newPath =~ s/\\/\\\\/g;
+    $newPath = '"' . $newPath . '"';
+    # Append the code to fix the path.
+    Env::WriteLines($oh, "",
+        "# Insure the $var has our $type in it.",
+        "\$_ = $newPath;",
+        "if (! \$ENV{$var}) {",
+        "    \$ENV{$var} = \$_;",
+        "} elsif (substr(\$ENV{$var}, 0, $newPathLen) ne \$_) {",
+        "    \$ENV{$var} = \"\$_$delim\$ENV{$var}\";",
+        "}");
+}
 
 =head3 WriteAllConfigs
 
