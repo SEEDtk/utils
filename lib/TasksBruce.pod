@@ -5,5 +5,7 @@ This file contains Bruce's current to-do list.
 =cut
 
     ## TODO add a method for queries based on secondary fields
-    ## TODO test shared and exclusive loading on new_rolesids branch
+    ## TODO fix role handling
+    ## TODO write a utility to normalize function descriptions
+
 
