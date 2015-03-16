@@ -1043,8 +1043,9 @@ sub _p2 {
     my $codedString = Tracer::Escape($realString);
 
 Escape a string for use in a command. Tabs will be replaced by C<\t>, new-lines
-replaced by C<\n>, carriage returns will be deleted, and backslashes will be doubled. The
-result is to reverse the effect of L</UnEscape>.
+replaced by C<\n>, carriage returns will be deleted, and backslashes will be doubled.
+Non-ascii characters will be converted to x-notation. The result is to reverse the effect
+of L</UnEscape>.
 
 =over 4
 
@@ -1068,7 +1069,7 @@ sub Escape {
     # Loop through the parameter string, looking for sequences to escape.
     while (length $realString > 0) {
         # Look for the first sequence to escape.
-        if ($realString =~ /^(.*?)([\n\t\r\\])/) {
+        if ($realString =~ /^(.*?)([\n\t\r\\\x80-\xff])/) {
             # Here we found it. The text preceding the sequence is in $1. The sequence
             # itself is in $2. First, move the clear text to the return variable.
             $retVal .= $1;
@@ -1077,10 +1078,13 @@ sub Escape {
             # Get the matched character.
             my $char = $2;
             # If we have a CR, we are done.
-            if ($char ne "\r") {
-                # It's not a CR, so encode the escape sequence.
+            if ($char eq "\n" || $char eq "\t" || $char eq "\\") {
+                # It's a tab or new-line, so encode the escape sequence.
                 $char =~ tr/\t\n/tn/;
                 $retVal .= "\\" . $char;
+            } elsif ($char ne "\r") {
+                # Here we have a non-ascii character.
+                $retVal .= "\\x" . sprintf('%02x', ord $char);
             }
         } else {
             # Here there are no more escape sequences. The rest of the string is
@@ -1128,18 +1132,21 @@ sub UnEscape {
         # "\<tab>" no matter what we do.)
         while (length $codedString > 0) {
             # Look for the first escape sequence.
-            if ($codedString =~ /^(.*?)\\(\\|n|t|r)/) {
+            if ($codedString =~ /^(.*?)\\([\\ntr]|x[a-fA-F0-9]{2})/) {
                 # Here we found it. The text preceding the sequence is in $1. The sequence
                 # itself is in $2. First, move the clear text to the return variable.
                 $retVal .= $1;
-                $codedString = substr $codedString, (2 + length $1);
+                $codedString = substr $codedString, (1 + length($2) + length($1));
                 # Get the escape value.
                 my $char = $2;
                 # If we have a "\r", we are done.
-                if ($char ne 'r') {
+                if ($char eq 'n' || $char eq 't' || $char eq '\\') {
                     # Here it's not an 'r', so we convert it.
                     $char =~ tr/\\tn/\\\t\n/;
                     $retVal .= $char;
+                } elsif ($char ne 'r') {
+                    # Here we have a hex code.
+                    $retVal .= chr(hex $char);
                 }
             } else {
                 # Here there are no more escape sequences. The rest of the string is
