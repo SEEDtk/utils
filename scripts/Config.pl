@@ -31,7 +31,7 @@ use XML::Writer;
 no warnings qw(once);
 
 ## THIS CONSTANT DEFINES THE CORE MODULES
-use constant CORE => qw(utils ERDB kernel);
+use constant CORE => qw(utils ERDB kernel RASTtk);
 
 =head1 Generate SEEDtk Configuration Files
 

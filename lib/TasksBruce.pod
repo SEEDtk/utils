@@ -5,8 +5,7 @@ This file contains Bruce's current to-do list.
 =cut
 
     ## TODO add a method for queries based on secondary fields
-    ## TODO reload with new role stuff
-    ## TODO write a utility to normalize function descriptions
+    ## TODO rename ERDB to ERDBtk
 
 
 
