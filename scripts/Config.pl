@@ -279,12 +279,13 @@ my $projDirForPush = $projDir;
 if ($winMode) {
     # Windows, so we translate.
     $projDirForPush =~ tr/\//\\/;
+    # We also want to turn off echoing.
+    print $oh "\@echo off\n";
 } else {
     # In Unix, we need the shebang.
     print $oh "#!/usr/bin/env bash\n";
 }
 # Now write the commands to run through the directories and pull.
-print $oh "\@echo off\n";
 print $oh "echo Pulling project directory.\n";
 print $oh "pushd $projDirForPush\n";
 print $oh "git pull\n";
