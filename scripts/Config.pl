@@ -25,13 +25,17 @@ use File::Copy;
 use File::Path;
 use Getopt::Long::Descriptive;
 use XML::Writer;
+use IO::File;
 
 # We need to look inside the FIG_Config even though it is loaded at
 # run-time, so we will get lots of warnings about one-time variables.
 no warnings qw(once);
 
 ## THIS CONSTANT DEFINES THE CORE MODULES
-use constant CORE => qw(utils ERDB kernel);
+use constant CORE => qw(utils ERDB kernel RASTtk);
+
+## THIS CONSTANT DEFINES MODULES WITH SPECIAL INCLUDE LISTS
+use constant INCLUDES => { utils => ['utils'], RASTtk => ['RASTtk', 'utils'] };
 
 =head1 Generate SEEDtk Configuration Files
 
@@ -677,27 +681,35 @@ sub WriteAllConfigs {
     if (! $winMode) {
         chmod 0755, $fileName;
     }
-    # Now we need to create the includepath file. This is an XML file that has
-    # to appear in every project directory. First, we create the text of the file.
-    my $xmlOut = XML::Writer->new(OUTPUT => 'self', NEWLINES => 1);
-    $xmlOut->xmlDecl("UTF-8");
-    # The main tag enclosing all others is "includepath".
-    $xmlOut->startTag("includepath");
-    # Loop through the paths, generating includepathentry tags.
-    for my $path (@FIG_Config::libs) {
-        $xmlOut->emptyTag('includepathentry', path => File::Spec->rel2abs($path));
-    }
-    # Close the main tag.
-    $xmlOut->endTag("includepath");
-    # Close the document.
-    $xmlOut->end();
-    # Get the document text.
-    my $xmlDoc = $xmlOut->to_string();
-    # Now loop through the modules, writing out the xml.
+    # Now we need to create the includepath files. These are XML files that have
+    # to appear in every project directory and specify from which other projects
+    # it can include modules. In most cases this is all of them. The INCLUDES
+    # hash specifies the exceptions.
+    print "Writing includepath files.\n";
     for my $module (keys %$modules) {
-        open(my $mh, ">$modules->{$module}/.includepath") || die "Could not open Eclipse includepath file for $module: $!";
-        print $mh $xmlDoc;
-        close $mh;
+        my $mh = IO::File->new(">$modules->{$module}/.includepath") ||
+                die "Could not open Eclipse includepath file for $module: $!";
+        my $xmlOut = XML::Writer->new(OUTPUT => $mh, DATA_MODE => 1, DATA_INDENT => 4);
+        $xmlOut->xmlDecl("UTF-8");
+        # The main tag enclosing all others is "includepath".
+        $xmlOut->startTag("includepath");
+        # Determine the list of libraries.
+        my $libList;
+        if (INCLUDES->{$module}) {
+            $libList = INCLUDES->{$module};
+        } else {
+            $libList = \@FIG_Config::modules;
+        }
+        # Include the project directory for FIG_Config.
+        $xmlOut->emptyTag('includepathentry', path => File::Spec->rel2abs("$projDir/config"));
+        # Loop through the paths, generating includepathentry tags.
+        for my $lib (@$libList) {
+            $xmlOut->emptyTag('includepathentry', path => File::Spec->rel2abs($modules->{$lib}));
+        }
+        # Close the main tag.
+        $xmlOut->endTag("includepath");
+        # Close the document.
+        $xmlOut->end();
     }
 }
 
