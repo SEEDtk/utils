@@ -54,7 +54,7 @@ The structural information about the SEEDtk environment is kept in the L<FIG_Con
 in the B<config> subdirectory of the project directory.
 
 The information in the L<FIG_Config> is used to generate helper files and scripts, as
-well as to specify defaults in various parts of the L<ERDB> system. When it changes,
+well as to specify defaults in various parts of the L<ERDBtk> system. When it changes,
 you must run L<Config.pl> to update your environment. The B<@modules> variable
 contains a list of the modules installed on your system. This is used to configure
 your path and your list of PERL include libraries. L<Config.pl> will insure the
@@ -81,10 +81,16 @@ loading and maintaining the database.
 This module contains code relating to bioinformatics and scripts for querying and
 updating the database.
 
+=item RASTtk
+
+This module contains code that is intended to be shared to other projects. It relies
+only on libraries in the C<utils> component.
+
 =item utils
 
-This module contains code that does not relate to bioinformatics or the database.
-It also contains prototype templates for PERL code.
+This module contains code that does not relate to the database and requires no other
+modules to run.
+
 
 =back
 
@@ -180,14 +186,14 @@ The Shrub Database Page initially displays the database diagram for your current
 At the top is a form you can use to test queries. The query results appear in the lower
 frame. To get the database design back, use the B<Diagram> button.
 
-To test a query, you must enter an L<object name list|ERDB/Object Name List> in the B<Path>
-box, a L<filter clause|ERDB/Filter Clause> in the B<Filter> box, one or more parameter values
-in the B<Parms> box, and a field name list in L<standard field name format|ERDB/Standard Field Name Format>
-in the B<Fields> box. These all correspond to parameters of the method L<ERDB/GetAll>.
+To test a query, you must enter an L<object name list|ERDBtk/Object Name List> in the B<Path>
+box, a L<filter clause|ERDBtk/Filter Clause> in the B<Filter> box, one or more parameter values
+in the B<Parms> box, and a field name list in L<standard field name format|ERDBtk/Standard Field Name Format>
+in the B<Fields> box. These all correspond to parameters of the method L<ERDBtk/GetAll>.
 
 The B<Limit> box limits the number of rows returned. The B<Code Style> box causes PERL code for the
-query to be displayed. A code style of C<GetAll> displays a single call to L<ERDB/GetAll>. A code style
-of C<Get> displays a loop that uses the method L<ERDB/Get>. A code style of C<get_all> generates a command line
+query to be displayed. A code style of C<GetAll> displays a single call to L<ERDBtk/GetAll>. A code style
+of C<Get> displays a loop that uses the method L<ERDBtk/Get>. A code style of C<get_all> generates a command line
 for using L<get_all.pl>.
 
 When specifying the parameter values, you can enter a variable name by starting the line with a
@@ -395,7 +401,7 @@ For each project you want to create:
 
 From the main Eclipse menu, select I<File, Import, Git, Projects from Git, Clone URI> to get to the
 B<Source Git Repository> dialog. Enter the URI C<https://github.com/SEEDtk/>I<project> where I<project>
-is the current project (either C<SEEDtk>, C<ERDB>, C<kernel>, C<utils>, or C<Web>). Enter your GITHUB
+is the current project (either C<SEEDtk>, C<ERDBtk>, C<kernel>, C<utils>, or C<Web>). Enter your GITHUB
 username in the I<User> box of the I<Authentication> section, and your GITHUB password below it in the
 I<Password> box. If you check I<Store in Secure Store>, you'll never have to enter the user name or
 passwword again. Click I<Next>
@@ -410,8 +416,8 @@ I<Next> again.
 You should now be on the B<Local Destination> dialog. Select the directory where you want your code
 stored. In general, it will be outside the Eclipse workspace in a special directory allocated for GIT.
 Make sure, however, that all of the projects are stored under the same folder. That is, if C<seedtk>
-is going in the directory C</Users/Projects/GIT/seedtk>, the C<ERDB> project must be in
-C</Users/Projects/GIT/ERDB>, the C<kernel> project in C</Users/Projects/GIT/kernel>, and so forth.
+is going in the directory C</Users/Projects/GIT/seedtk>, the C<ERDBtk> project must be in
+C</Users/Projects/GIT/ERDBtk>, the C<kernel> project in C</Users/Projects/GIT/kernel>, and so forth.
 Click I<Next>.
 
 =item 4
