@@ -704,7 +704,7 @@ sub WriteAllConfigs {
         $xmlOut->emptyTag('includepathentry', path => File::Spec->rel2abs("$projDir/config"));
         # Loop through the paths, generating includepathentry tags.
         for my $lib (@$libList) {
-            $xmlOut->emptyTag('includepathentry', path => File::Spec->rel2abs($modules->{$lib}));
+            $xmlOut->emptyTag('includepathentry', path => File::Spec->rel2abs("$modules->{$lib}/lib"));
         }
         # Close the main tag.
         $xmlOut->endTag("includepath");
