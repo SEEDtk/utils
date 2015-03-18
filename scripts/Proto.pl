@@ -20,10 +20,9 @@
 use strict;
 use warnings;
 use FIG_Config;
-use Shrub;
 use ScriptUtils;
 
-=head1 Prototype Shrub Pipeline Script
+=head1 Prototype Non-Shrub Pipeline Script
 
     Proto [ options ] parm1 parm2 ...
 
@@ -33,8 +32,7 @@ This is a prototype template for a database script.
 
 ## describe positional parameters
 
-The command-line options are those found in L<Shrub/script_options> and
-L<ScriptUtils/ih_options> plus the following.
+The command-line options are those found in L<ScriptUtils/ih_options> plus the following.
 
 =over 4
 
@@ -45,12 +43,9 @@ L<ScriptUtils/ih_options> plus the following.
 =cut
 
 # Get the command-line parameters.
-my $opt = ScriptUtils::Opts('parm1 parm2 ...', Shrub::script_options(),
-        ScriptUtils::ih_options(),
+my $opt = ScriptUtils::Opts('parm1 parm2 ...', ScriptUtils::ih_options(),
         ## more command-line options
         );
-# Connect to the database.
-my $shrub = Shrub->new_for_script($opt);
 # Open the input file.
 my $ih = ScriptUtils::IH($opt->input);
 
