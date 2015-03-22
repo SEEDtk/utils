@@ -150,6 +150,8 @@ my $projDir = ($eclipseMode ? join("/", $base_dir, $opt->eclipse) : $base_dir);
 if (! -d "$projDir/config") {
     die "Project directory not found in $projDir.";
 }
+# Save the current environment, before it's been modified by FIG_Config.
+my %oldenv = %ENV;
 # Get the name of the real FIG_Config file (not the output file,
 # if one was specified, the real one).
 my $fig_config_name = "$projDir/config/FIG_Config.pm";
@@ -221,7 +223,7 @@ if ($opt->fc eq 'off') {
     }
     # Write the FIG_Config.
     print "Writing configuration to $outputName.\n";
-    WriteAllParams($outputName, \%modules, $projDir, $dataRootDir, $webRootDir, $winMode, $opt);
+    WriteAllParams($outputName, \%modules, $projDir, $dataRootDir, $webRootDir, $winMode, $opt, \%oldenv);
     # Execute it to get the latest variable values.
     print "Reading back new configuration.\n";
     RunFigConfig($outputName);
@@ -598,13 +600,17 @@ Name of the project directory.
 
 Command-line options object.
 
+=item oldenv
+
+Reference to a hash that contains the original environment.
+
 =back
 
 =cut
 
 sub WriteAllConfigs {
     # Get the parameters.
-    my ($winMode, $modules, $projDir, $opt) = @_;
+    my ($winMode, $modules, $projDir, $opt, $oldenv) = @_;
     # Compute the output file, the comment mark, and the path delimiter.
     my $fileName = "$projDir/user-env.";
     my ($delim, $rem);
@@ -662,7 +668,7 @@ sub WriteAllConfigs {
         print $oh "export PERL5LIB=$libs\n";
     }
     # The libraries and the path are now set up.
-    if ($winMode && $ENV{PATHEXT} !~ /.pl(?:;|$)/i) {
+    if ($winMode && $oldenv->{PATHEXT} !~ /.pl(?:;|$)/i) {
         # Here we are in Windows and PERL scripts are not set up as
         # an executable type. We need to fix that.
         print $oh "SET PATHEXT=%PATHEXT%;.PL\n"

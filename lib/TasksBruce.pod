@@ -5,7 +5,6 @@ This file contains Bruce's current to-do list.
 =cut
 
     ## TODO add a method for queries based on secondary fields
-    ## TODO rename ERDB to ERDBtk
-
-
+    ## TODO add shell scripting to the module projects
+    ## TODO schedule weekly rebuilds of the core repository
 
