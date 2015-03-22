@@ -60,10 +60,6 @@ contains a list of the modules installed on your system. This is used to configu
 your path and your list of PERL include libraries. L<Config.pl> will insure the
 core modules required to run the system are always included in this list.
 
-In Windows, you can direct L<Config.pl> to write environment information to the
-system registry. If this is the case, you must reboot the system to access the
-new information. In an Eclipse configuration, you can direct L<Config.pl> to update
-your virtual hosts file. In this case, you must restart the local web server.
 
 =head2 The Source Modules
 
@@ -460,7 +456,10 @@ him that this is not a problem by clicking I<Proceed>. A flurry of messages will
 followed by C<All done>.
 
 If you are using GitHub for Windows (which is only the case for Windows environments, obviously),
-add C<--gfw> to the command line above. This will tell it to put GIT in your path.
+add C<--gfw> to the command line above. This will tell it to put GIT in your path. It is recommended,
+however, that you use the regular L<Git for Windows|http://git-scm.com/downloads> instead. This
+installs a bash shell and associates it with C<.sh> files, enabling you to use shell scripts designed
+for Unix.
 
 No do I<Project, Clean> and specify that you want to I<Clean all projects>. The error markers will
 all disappear except for one or two indicating PERL modules you need to install. Once you've

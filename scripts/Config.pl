@@ -140,6 +140,7 @@ my ($opt, $usage) = describe_options('%o %c dataRootDirectory webRootDirectory',
         ["dna=s", "location of the DNA repository (if other than local)"],
         ["links", "generate Links.html file"],
         ["gfw", "add GitHub for Windows GIT to the path (Windows only)"],
+        ["gitbash", "configure for gitbash use"],
         ["eclipse=s", "if specified, then we will set up for Eclipse; the value must be the base name of the project directory project"]
         );
 print "Analyzing directories.\n";
@@ -853,17 +854,23 @@ sub SetupBinaries {
         # Get the scripts for this module.
         my $scriptDir = "$modules->{$module}/scripts";
         opendir(my $dh, $scriptDir) || die "Could not open script directory $scriptDir: $1";
-        my @scripts = grep { substr($_, -3, 3) eq '.pl' } readdir($dh);
+        my @scripts = grep { $_ =~ /\.(?:pl|sh)/i } readdir($dh);
         closedir $dh;
         # Loop through them, creating the wrappers.
         for my $script (@scripts) {
-            # Get the unsuffixed script name.
-            my $binaryName = substr($script, 0, -3);
+            # Get the unsuffixed script name and the suffix.
+            my ($binaryName, $type) = $script =~ /(.+)\.(.+)/;
             # Create the wrapper file.
             my $fileName = "$binDir/$binaryName";
             open(my $oh, ">$fileName") || die "Could not open $binaryName: $!";
             print $oh "#!/usr/bin/env bash\n";
-            print $oh "perl $scriptDir/$script \"\$\@\"\n";
+            if ($type eq 'pl') {
+                print $oh "perl $scriptDir/$script \"\$\@\"\n";
+            } elsif ($type eq 'sh') {
+                print $oh "$scriptDir/$script \"\$\@\"\n";
+            } else {
+                die "Invalid script suffix $type found in $scriptDir.\n";
+            }
             close $oh;
             # Turn on the execution bits.
             my @finfo = stat $fileName;
