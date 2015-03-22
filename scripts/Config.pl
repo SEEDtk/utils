@@ -491,10 +491,12 @@ sub WriteAllParams {
         if (! $winMode) {
             # On the Mac, we need to fix the MySQL library path.
             opendir(my $dh, "/usr/local") || die "Could not perform MySQL directory search.";
-            my ($libdir) = grep { $_ =~ /^mysql-\d+/ } readdir $dh;
+            my ($libdir) = grep { ($_ =~ /^mysql-\d+/) && (-f "/usr/local/$_/libmysqlclient.18.dylib") } readdir $dh;
             if ($libdir) {
                 Env::WriteLines($oh, "", "# Set DYLD path for mysql",
-                        "\$ENV{DYLD_LIBRARY_PATH} = \"/usr/local/$libdir/lib\";");
+                        "\$ENV{DYLD_FALLBACK_LIBRARY_PATH} = \"/usr/local/$libdir/lib\";");
+                print "\n**** NOTE: IF DBD::MySQL fails, you will need to run\n\n";
+                print "sudo ln -s /usr/local/$libdir/lib/libmysqlclient.18.dylib /usr/local/lib/libmysqlclient.18.dylib\n\n";
             }
         } else {
             # On Windows, we need to upgrade that PATHEXT.
@@ -865,9 +867,12 @@ sub SetupBinaries {
             open(my $oh, ">$fileName") || die "Could not open $binaryName: $!";
             print $oh "#!/usr/bin/env bash\n";
             if ($type eq 'pl') {
+            	# For PERL, we ask perl to execute the file.
                 print $oh "perl $scriptDir/$script \"\$\@\"\n";
             } elsif ($type eq 'sh') {
+            	# For bash, we execute the file directly. This requires updating permissions.
                 print $oh "$scriptDir/$script \"\$\@\"\n";
+                chmod 0x755, "$scriptDir/$script";
             } else {
                 die "Invalid script suffix $type found in $scriptDir.\n";
             }
