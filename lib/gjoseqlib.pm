@@ -1,4 +1,4 @@
-package gjo::seqlib;
+package gjoseqlib;
 
 =head1 Sequence-IO Utilities
 

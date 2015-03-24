@@ -22,7 +22,7 @@ use Data::Dumper;
 
 use strict;
 use gjo::alignment;
-use gjo::seqlib;
+use gjoseqlib;
 use gjo::BlastParse;
 use gjo::SeedAware;
 
@@ -1465,7 +1465,7 @@ sub valid_fasta
 
         elsif ((! $seq_src) || (ref($seq_src) eq 'GLOB') || (ref($seq_src) eq 'SCALAR'))
         {
-            $data = &gjo::seqlib::read_fasta($seq_src);
+            $data = &gjoseqlib::read_fasta($seq_src);
         }
 
         #  If we got data, write it to the file
@@ -1473,7 +1473,7 @@ sub valid_fasta
         if ($data && (@$data > 0))
         {
             $out_file = $tmp_file;
-            &gjo::seqlib::write_fasta( $out_file, $data );
+            &gjoseqlib::write_fasta( $out_file, $data );
         }
     }
 

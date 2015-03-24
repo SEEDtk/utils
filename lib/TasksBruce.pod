@@ -5,6 +5,7 @@ This file contains Bruce's current to-do list.
 =cut
 
     ## TODO add a method for queries based on secondary fields
-    ## TODO add shell scripting to the module projects
+    ## TODO document GenomeTypeObject
+    ## TODO setup coordination between SEEDtk and SEED for certain modules-- email from Bob
     ## TODO schedule weekly rebuilds of the core repository
 

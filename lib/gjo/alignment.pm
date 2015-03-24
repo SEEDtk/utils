@@ -100,7 +100,7 @@ package gjo::alignment;
 =cut
 
 use strict;
-use gjo::seqlib;
+use gjoseqlib;
 use gjo::SeedAware;
 use File::Copy;
 use Carp;                       # Used for diagnostics
@@ -298,7 +298,7 @@ sub align_with_mafft
     my $redirects = { stdout => $tmpout, stderr => '/dev/null' };
     SeedAware::system_with_redirect( $mafft, @params, $redirects );
 
-    my @ali = &gjo::seqlib::read_fasta( $tmpout );
+    my @ali = &gjoseqlib::read_fasta( $tmpout );
     foreach $_ ( @ali ) { $_->[1] = $comment{$_->[0]} }
 
     my $treestr;
@@ -478,7 +478,7 @@ sub align_with_muscle
 
     SeedAware::run_redirected( $muscle, @params);
 
-    my @ali = &gjo::seqlib::read_fasta( $tmpout );
+    my @ali = &gjoseqlib::read_fasta( $tmpout );
     foreach $_ ( @ali ) { $_->[1] = $comment{$_->[0]} }
 
     my $treestr;

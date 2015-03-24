@@ -1,3 +1,6 @@
+
+# This is a SAS component.
+
 ########################################################################
 # Copyright (c) 2003-2011 University of Chicago and Fellowship
 # for Interpretations of Genomes. All Rights Reserved.
@@ -26,7 +29,7 @@ use Data::Dumper;
 BEGIN
 {
     eval {
-    require FIG_Config;
+	require FIG_Config;
     };
 }
 
@@ -37,7 +40,7 @@ BEGIN
                      rev_comp genome_of min max sims verify_dir between translate
                      standard_genetic_code parse_location roles_of_function
                      strip_ec location_string location_cmp strand_of by_fig_id
-             verify_db bbh_data id_url validate_fasta_file);
+		     verify_db bbh_data id_url validate_fasta_file);
 
 =head1 SEED Utility Methods
 
@@ -72,9 +75,9 @@ length.
 
 sub abbrev {
     my($genome_name) = @_;
-    my %exclude = map { $_ => 1 }
+    my %exclude = map { $_ => 1 } 
                   qw( candidatus subspecies subsp strain str bv pv sp );
-    my ($p1,$p2,@rest) = grep { ! $exclude{lc $_} }
+    my ($p1,$p2,@rest) = grep { ! $exclude{lc $_} } 
                          map { $_ =~ s/\W//g; $_ }
                          split(/\s/,$genome_name);
     my $p3 = join("",@rest);
@@ -83,53 +86,53 @@ sub abbrev {
 
     if (! $p2)
     {
-    if (length($p1) > $lbl_ln) { $p1 = substr($p1,0,$lbl_ln) }
-    return $p1;
+	if (length($p1) > $lbl_ln) { $p1 = substr($p1,0,$lbl_ln) }
+	return $p1;
     }
     elsif (! $p3)
     {
-    my $l1 = length($p1);
-    my $l2 = length($p2);
-    my $ln1 = $l1;
-    my $ln2 = $l2;
+	my $l1 = length($p1);
+	my $l2 = length($p2);
+	my $ln1 = $l1;
+	my $ln2 = $l2;
 
-    if (($l1 + $l2 + 1) > $lbl_ln)
-    {
-        $ln1 = $lbl_ln - ($l2+1);
-        $ln1 = &min($l1,&max($ln1,3));
-        $ln2 = $lbl_ln - ($ln1+1);
-        $p1 = substr($p1,0,$ln1);
-        $p2 = substr($p2,0,$ln2);
-    }
-    my $sep = ($l1 == $ln1) ? '_' : '.';
-    return $p1 . $sep . $p2;
+	if (($l1 + $l2 + 1) > $lbl_ln)
+	{
+	    $ln1 = $lbl_ln - ($l2+1);
+	    $ln1 = &min($l1,&max($ln1,3));
+	    $ln2 = $lbl_ln - ($ln1+1);
+	    $p1 = substr($p1,0,$ln1);
+	    $p2 = substr($p2,0,$ln2);
+	}
+	my $sep = ($l1 == $ln1) ? '_' : '.';
+	return $p1 . $sep . $p2;
     }
     else
     {
-    my $l1  = length($p1);
-    my $l2  = length($p2);
-    my $l3  = length($p3);
-    my $l23 = $l2+$l3+1;
-    my $ln1 = $l1;
-    my $ln2 = $l2;
-    my $ln3 = $l3;
+	my $l1  = length($p1);
+	my $l2  = length($p2);
+	my $l3  = length($p3);
+	my $l23 = $l2+$l3+1;
+	my $ln1 = $l1;
+	my $ln2 = $l2;
+	my $ln3 = $l3;
+	
+	if (($l1 + $l2 + $l3 + 2) > $lbl_ln)
+	{
+	    $ln1 = $lbl_ln - ($l23 + 1);
+	    $ln1 = &min($l1,&max($ln1,3));
+	    my $rest = $lbl_ln - ($ln1+1);
+	    $ln2 = $rest - ($ln3+1);
+	    $ln2 = &min($l2,&max($ln2,3));
+	    $ln3 = $lbl_ln - ($ln1+$ln2+2);
 
-    if (($l1 + $l2 + $l3 + 2) > $lbl_ln)
-    {
-        $ln1 = $lbl_ln - ($l23 + 1);
-        $ln1 = &min($l1,&max($ln1,3));
-        my $rest = $lbl_ln - ($ln1+1);
-        $ln2 = $rest - ($ln3+1);
-        $ln2 = &min($l2,&max($ln2,3));
-        $ln3 = $lbl_ln - ($ln1+$ln2+2);
-
-        $p1 = substr($p1,0,$ln1);
-        $p2 = substr($p2,0,$ln2);
-        $p3 = substr($p3,0,$ln3);
-    }
-    my $sep1 = ($l1 == $ln1) ? '_' : '.';
-    my $sep2 = ($l2 == $ln2) ? '_' : '.';
-    return $p1 . $sep1 . $p2 . $sep2 . $p3;
+	    $p1 = substr($p1,0,$ln1);
+	    $p2 = substr($p2,0,$ln2);
+	    $p3 = substr($p3,0,$ln3);
+	}
+	my $sep1 = ($l1 == $ln1) ? '_' : '.';
+	my $sep2 = ($l2 == $ln2) ? '_' : '.';
+	return $p1 . $sep1 . $p2 . $sep2 . $p3;
     }
 }
 
@@ -161,14 +164,14 @@ sub abbrev_set {
     my $hash = {};
     foreach my $name (@$genome_names)
     {
-    next if ($hash->{$name});
-    my $abbrev = &abbrev($name);
-    while ($seen{$abbrev})
-    {
-        $abbrev = &next_try($abbrev);
-    }
-    $hash->{$name} = $abbrev;
-    $seen{$abbrev} = 1;
+	next if ($hash->{$name});
+	my $abbrev = &abbrev($name);
+	while ($seen{$abbrev})
+	{
+	    $abbrev = &next_try($abbrev);
+	}
+	$hash->{$name} = $abbrev;
+	$seen{$abbrev} = 1;
     }
     return $hash;
 }
@@ -182,7 +185,7 @@ sub next_try {
     my $ln = length($abbrev) + length($ext) + 1;
     if ($ln > 10)
     {
-    $abbrev = substr($abbrev,0,(10 - (length($ext)+1)));
+	$abbrev = substr($abbrev,0,(10 - (length($ext)+1)));
     }
     return "$abbrev.$ext";
 }
@@ -525,21 +528,27 @@ sub create_fasta_record {
     # If we're in stripped mode, we just return the sequence.
     if ($stripped) {
         $retVal = $sequence;
-    } else {
+    # Test for valid data so that we do not die in a string operation
+    } elsif ( defined( $id ) && defined( $sequence ) ) {
         # Here we have to do the FASTA conversion. Start with the ID.
         my $header = ">$id";
-        # Add a comment, if any.
-        if ($comment) {
+        # Add a comment, if a valid one exists.
+        if ( defined( $comment ) && $comment =~ /\S/ ) {
             $header .= " $comment";
         }
         # Clean up the sequence.
         $sequence =~ s/\s+//g;
+
         # We need to format the sequence into 60-byte chunks. We use the infamous
         # grep-split trick. The split, because of the presence of the parentheses,
         # includes the matched delimiters in the output list. The grep strips out
         # the empty list items that appear between the so-called delimiters, since
         # the delimiters are what we want.
-        my @chunks = grep { $_ } split /(.{1,60})/, $sequence;
+        # my @chunks = grep { $_ } split /(.{1,60})/, $sequence;
+
+        # ~35% faster to do it with just a global regex match -- gjo
+        my @chunks = $sequence =~ /(.{1,60})/g;
+
         # Add the chunks and the trailer.
         $retVal = join("\n", $header, @chunks) . "\n";
     }
@@ -583,7 +592,7 @@ C<\*STDOUT> is assumed.
 =cut
 
 sub display_id_and_seq {
-
+    
     my( $id, $seqP, $fh ) = @_;
 
     if (! defined($fh) )  { $fh = \*STDOUT; }
@@ -637,7 +646,7 @@ sub display_seq {
 }
 
 =head3 extract_seq
-
+    
  $seq = &SeedUtils::extract_seq($contigs,$loc)
 
 This is just a little utility routine that I have found convenient.  It assumes that
@@ -861,12 +870,12 @@ sub flatten_dumper {
 
     foreach $x (@x)
     {
-    $x = Dumper($x);
+	$x = Dumper($x);
 
-    $x =~ s/\$VAR\d+\s+\=\s+//o;
-    $x =~ s/\n//gso;
-    $x =~ s/\s+/ /go;
-    $x =~ s/\'//go;
+	$x =~ s/\$VAR\d+\s+\=\s+//o;
+	$x =~ s/\n//gso;
+	$x =~ s/\s+/ /go;
+	$x =~ s/\'//go;
 #       $x =~ s/^[^\(\[\{]+//o;
 #       $x =~ s/[^\)\]\}]+$//o;
     }
@@ -905,6 +914,7 @@ sub genome_of {
     if ($fid =~ /^fig\|(\d+\.\d+)\./) {
         $retVal = $1;
     }
+    elsif ($fid =~ /^(kb\|g.\d+)/) { $retVal = $1 }
     # Return the result.
     return $retVal;
 }
@@ -1154,13 +1164,15 @@ an undefined value if an empty list is passed in.
 
 =cut
 
+# Changed to survive a list with undefined values. -- gjo
 sub max {
-    my ($retVal, @nums) = @_;
-    for my $num (@nums) {
-        if ($num > $retVal) {
-            $retVal = $num;
-        }
-    }
+    shift if UNIVERSAL::isa($_[0],__PACKAGE__);
+    shift while ( @_ && ! defined( $_[0] ) );
+    return undef unless @_;
+
+    my $retVal = shift;
+    foreach ( @_ ) { $retVal = $_ if defined($_) && ( $_ > $retVal ) }
+
     return $retVal;
 }
 
@@ -1185,13 +1197,15 @@ an undefined value if an empty list is passed in.
 
 =cut
 
+# Changed to survive a list with undefined values. -- gjo
 sub min {
-    my ($retVal, @nums) = @_;
-    for my $num (@nums) {
-        if ($num < $retVal) {
-            $retVal = $num;
-        }
-    }
+    shift if UNIVERSAL::isa($_[0],__PACKAGE__);
+    shift while ( @_ && ! defined( $_[0] ) );
+    return undef unless @_;
+
+    my $retVal = shift;
+    foreach ( @_ ) { $retVal = $_ if defined($_) && ( $_ < $retVal ) }
+
     return $retVal;
 }
 
@@ -1304,10 +1318,10 @@ sub parse_location {
     }
     elsif ($locString =~ /^(.*)_(\d+)_(\d+)$/)
     {
-    $contig = $1;
-    $begin = $2;
-    $end = $3;
-    $strand = $begin < $end ? "+" : "-";
+	$contig = $1;
+	$begin = $2;
+	$end = $3;
+	$strand = $begin < $end ? "+" : "-";
     }
 
     # Return the results.
@@ -1447,8 +1461,182 @@ sub roles_of_function {
     # Remove any comment.
     my $commentFree = ($assignment =~ /(.+?)\s*[#!]/ ? $1 : $assignment);
     # Split out the roles.
-    my @retVal = split /\s+[\/@]\s+|\s*;\s+/, $commentFree;
+    my @retVal = grep { $_ } split /\s+[\/@]\s+|\s*;\s+/, $commentFree;
     # Return the result.
+    return @retVal;
+}
+
+=head3 sims
+
+    my @sims = sims($id, $maxN, $maxP, 'fig');
+    
+or
+
+    my @sims = sims($id, $maxN, $maxP, 'all);
+
+
+Retrieve similarities from the network similarity server. The similarity retrieval
+is performed using an HTTP user agent that returns similarity data in multiple
+chunks. An anonymous subroutine is passed to the user agent that parses and
+reformats the chunks as they come in. The similarites themselves are returned
+as B<Sim> objects. Sim objects are actually list references with 15 elements.
+The Sim object methods allow access to the elements by name.
+
+Similarities can be either raw or expanded. The raw similarities are basic
+hits between features with similar DNA. Expanding a raw similarity drags in any
+features considered substantially identical. So, for example, if features B<A1>,
+B<A2>, and B<A3> are all substatially identical to B<A>, then a raw similarity
+B<[C,A]> would be expanded to B<[C,A] [C,A1] [C,A2] [C,A3]>.
+
+=over 4
+
+=item id
+
+ID of the feature whose similarities are desired, or reference to a list
+of the IDs of the features whose similarities are desired.
+
+=item maxN (optional)
+
+Maximum number of similarities to return for each incoming feature.
+
+=item maxP (optional)
+
+The maximum allowable similarity score.
+
+=item select (optional)
+
+Selection criterion: C<raw> means only raw similarities are returned; C<fig>
+means only similarities to FIG features are returned; C<all> means all expanded
+similarities are returned; and C<figx> means similarities are expanded until the
+number of FIG features equals the maximum.
+
+=item max_expand (optional)
+
+The maximum number of features to expand.
+
+=item filters (optional)
+
+Reference to a hash containing filter information, or a subroutine that can be
+used to filter the sims.
+
+=item RETURN
+
+Returns a list of L<Sim> objects.
+
+=back
+
+=cut
+
+sub sims {
+    # Get the parameters.
+    my($id, $maxN, $maxP, $select, $max_expand, $filters) = @_;
+    # Get the URL for submitting to the sims server.
+    my $url = $FIG_Config::sim_server_url || "http://bioseed.mcs.anl.gov/simserver/perl/sims.pl";
+    # Get a list of the IDs to process.
+    my @ids;
+    if (ref($id) eq "ARRAY") {
+        @ids = @$id;
+    } else {
+        @ids = ($id);
+    }
+    # Form a list of the parameters to pass to the server.
+    my %args = ();
+    $args{id} = \@ids;
+    $args{maxN} = $maxN if defined($maxN);
+    $args{maxP} = $maxP if defined($maxP);
+    $args{select} = $select if defined($select);
+    $args{max_expand} = $max_expand if defined($max_expand);
+    # If the filter is a hash, put the filters in the argument list.
+    if (ref($filters) eq 'HASH') {
+        for my $k (keys(%$filters))
+        {
+            $args{"filter_$k"}= $filters->{$k};
+        }
+    }
+    # Get the user agent.
+    require LWP::UserAgent;
+    my $ua = LWP::UserAgent->new();
+    # Insure we have the Sim module.
+    require Sim;
+    #
+    # Our next task is to create the anonymous subroutine that will process the
+    # chunks that come back from the server. We require three global variables:
+    # @sims to hold the similarities found, $tail to remember the unprocessed
+    # data from the previous chunk, and $chunks to count the chunks.
+    #
+    my @retVal;
+    my $tail;
+    my $chunks = 0;
+    #
+    # ANONYMOUS SUBROUTINE
+    #
+    my $cb = sub {
+        eval {
+            # Get the parameters.
+            my ($data, $command) = @_;
+            # Check for a reset command. If we get one, we discard any data
+            # in progress.
+            if ($command && $command eq 'reset') {
+                $tail = '';
+            } else {
+                $chunks++;
+                # Get the data to process. Note we concatenate it to the incoming
+                # tail from last time.
+                my $c = $tail . $data;
+                # Make sure the caller hasn't messed up the new-line character.
+                # FASTA readers in particular are notorious for doing things
+                # like that.
+                local $/ = "\n";
+                # Split the input into lines.
+                my @lines = split(/\n/, $c);
+                # If the input does not end with a new-line, we have a partial
+                # chunk and need to put it in the tail for next time. If not,
+                # there is no tail for next time.
+                if (substr($c, -1, 1) ne "\n") {
+                    $tail = pop @lines;
+                } else {
+                    $tail = '';
+                }
+                # Loop through the lines. Note there's no need to chomp because
+                # the SPLIT took out the new-line characters.
+                for my $l (@lines) {
+                    # Split the line into fields.
+                    my @s = split(/\t/, $l);
+                    # Insure we have all the fields we need.
+                    if (@s >= 9) {
+                        # Check to see if we've seen this SIM before.
+                        my $id1 = $s[0];
+                        my $id2 = $s[1];
+                        # Add it to the result list.
+                        push(@retVal, bless \@s, 'Sim');
+                    }
+                }
+            }
+        };
+    };
+    #
+    #   END OF ANONYMOUS SUBROUTINE
+    #
+    # Now we're ready to start. Because networking is an iffy thing, we set up
+    # to try our request multiple times.
+    my $n_retries = 10;
+    my $attempts = 0;
+    # Set the timeout value, in seconds.
+    $ua->timeout(180);
+    # Loop until we succeed or run out of retries.
+    my $done = 0;
+    while (! $done && $attempts++ < $n_retries) {
+        # Reset the content processor. This clears the tail.
+        &$cb(undef, 'reset');
+        my $resp = $ua->post($url, \%args, ':content_cb' => $cb);
+        if ($resp->is_success) {
+            # If the response was successful, get the content. This triggers
+            # the anonymous subroutine.
+            my $x = $resp->content;
+            # Denote we've been successful.
+            $done = 1;
+        }
+    }
     return @retVal;
 }
 
@@ -1470,15 +1658,15 @@ sub genetic_code {
     my $code = &standard_genetic_code();
 
     if    (($ncbi_genetic_code_num ==  1) ||
-       ($ncbi_genetic_code_num == 11)
-       ) {
-    #...Do nothing
+	   ($ncbi_genetic_code_num == 11)
+	   ) {
+	#...Do nothing
     }
     elsif ($ncbi_genetic_code_num ==  4) {
-    $code->{TGA} = 'W';
+	$code->{TGA} = 'W';
     }
     else {
-    die "Sorry, only genetic codes 1, 4, and 11 are currently supported";
+	die "Sorry, only genetic codes 1, 4, and 11 are currently supported";
     }
 
     return $code;
@@ -1680,7 +1868,7 @@ sub translate {
     my( $i,$j,$ln );
     my( $x,$y );
     my( $prot );
-
+    
     if (! defined($code)) {
         $code = &standard_genetic_code;
     }
@@ -1772,7 +1960,7 @@ sub verify_dir {
 =head3 validate_fasta_file
 
     $sequence_type = validate_fasta_file($in_file, $out_file)
-
+    
 Ensure the given file is in valid fasta format. If $out_file
 is given, write the data to $out_file as a normalized fasta file
 (with cleaned up line endings, upper case data).
@@ -1788,79 +1976,79 @@ sub validate_fasta_file
     my($file, $norm) = @_;
 
     my($input_fh, $clean_fh);
-
+    
     if ($file =~ /\.gz$/)
     {
-    open($input_fh, "-|", "gunzip", "-c", $file) or die "cannot unzip $file: $!";
+	open($input_fh, "-|", "gunzip", "-c", $file) or die "cannot unzip $file: $!";
     }
     else
     {
-    open($input_fh, "<", $file) or die "cannot open $file: $!";
+	open($input_fh, "<", $file) or die "cannot open $file: $!";
     }
 
     if ($norm)
     {
-    open($clean_fh, ">", $norm) or die "cannot write normalized file $norm: $!";
+	open($clean_fh, ">", $norm) or die "cannot write normalized file $norm: $!";
     }
 
     my $state = 'expect_header';
     my $cur_id;
     my $dna_chars;
     my $prot_chars;
-
+    
     while (<$input_fh>)
     {
-    chomp;
-
-    if ($state eq 'expect_header')
-    {
-        if (/^>(\S+)/)
-        {
-        $cur_id = $1;
-        $state = 'expect_data';
-        print $clean_fh ">$cur_id\n" if $clean_fh;
-        next;
-        }
-        else
-        {
-        die "Invalid fasta: Expected header at line $.\n";
-        }
-    }
-    elsif ($state eq 'expect_data')
-    {
-        if (/^>(\S+)/)
-        {
-        $cur_id = $1;
-        $state = 'expect_data';
-        print $clean_fh ">$cur_id\n" if $clean_fh;
-        next;
-        }
-        elsif (/^([acgtumrwsykbdhvn]*)\s*$/i)
-        {
-        print $clean_fh uc($1) . "\n" if $clean_fh;
-        $dna_chars += length($1);
-        next;
-        }
-        elsif (/^([*abcdefghijklmnopqrstuvwxyz]*)\s*$/i)
-        {
-        print $clean_fh uc($1) . "\n" if $clean_fh;
-        $prot_chars += length($1);
-        next;
-        }
-        else
-        {
-        my $str = $_;
-        if (length($_) > 100)
-        {
-            $str = substr($_, 0, 50) . " [...] " . substr($_, -50);
-        }
-        die "Invalid fasta: Bad data at line $.\n$str\n";
-        }
-    }
-    else
-    {
-        die "Internal error: invalid state $state\n";
-    }
+	chomp;
+	
+	if ($state eq 'expect_header')
+	{
+	    if (/^>(\S+)/)
+	    {
+		$cur_id = $1;
+		$state = 'expect_data';
+		print $clean_fh ">$cur_id\n" if $clean_fh;
+		next;
+	    }
+	    else
+	    {
+		die "Invalid fasta: Expected header at line $.\n";
+	    }
+	}
+	elsif ($state eq 'expect_data')
+	{
+	    if (/^>(\S+)/)
+	    {
+		$cur_id = $1;
+		$state = 'expect_data';
+		print $clean_fh ">$cur_id\n" if $clean_fh;
+		next;
+	    }
+	    elsif (/^([acgtumrwsykbdhvn]*)\s*$/i)
+	    {
+		print $clean_fh uc($1) . "\n" if $clean_fh;
+		$dna_chars += length($1);
+		next;
+	    }
+	    elsif (/^([*abcdefghijklmnopqrstuvwxyz]*)\s*$/i)
+	    {
+		print $clean_fh uc($1) . "\n" if $clean_fh;
+		$prot_chars += length($1);
+		next;
+	    }
+	    else
+	    {
+		my $str = $_;
+		if (length($_) > 100)
+		{
+		    $str = substr($_, 0, 50) . " [...] " . substr($_, -50);
+		}
+		die "Invalid fasta: Bad data at line $.\n$str\n";
+	    }
+	}
+	else
+	{
+	    die "Internal error: invalid state $state\n";
+	}
     }
     close($input_fh);
     close($clean_fh) if $clean_fh;
@@ -1883,16 +2071,130 @@ sub strip_func_comment {
 
     if (wantarray)
     {
-    my($just_func, $comment) = $func =~ /(.*?)(\s*\#.*)?$/;
-        return($just_func, $comment);
+	my($just_func, $comment) = $func =~ /(.*?)(\s*\#.*)?$/;
+        return($just_func, $comment);						  
     }
     else
     {
-    $func =~ s/\s*\#.*$//;
-    return $func;
+	$func =~ s/\s*\#.*$//;
+	return $func;
     }
 }
 
+sub verify_db {
+    my($db,$type) = @_;
+
+    #
+    # Find formatdb; if we're operating in a SEED environment
+    # use it from there.
+    #
+
+    my $path = '';
+    if ($FIG_Config::blastbin ne '' && -d $FIG_Config::blastbin)
+    {
+	$path = "$FIG_Config::blastbin/";
+    }
+    elsif ($FIG_Config::ext_bin ne '' && -d $FIG_Config::ext_bin)
+    {
+	$path = "$FIG_Config::ext_bin/";
+    }
+    
+
+    my @cmd;
+    if ($type =~ /^p/i)
+    {
+        unless ( ((-s "$db.psq") && (-M "$db.psq" <= -M $db)) ||
+                 ((-s "$db.00.psq") && (-M "$db.00.psq" <= -M $db)) )
+	{
+	    @cmd = ("${path}formatdb", "-p", "T", "-i", $db);
+	}
+    }
+    else
+    {
+        unless ( ((-s "$db.nsq") && (-M "$db.nsq" <= -M $db)) ||
+                 ((-s "$db.00.nsq") && (-M "$db.00.nsq" <= -M $db)) )
+	{
+	    @cmd = ("${path}formatdb", "-p", "F", "-i", $db);
+	}
+    }
+    if (@cmd)
+    {
+	my $rc = system(@cmd);
+	if ($rc != 0)
+	{
+	    warn "SeedUtils::verify_db: formatdb failed with rc=$rc: @cmd\n";
+	}
+    }
+}
+
+#
+# Some berkeley-db building utilities.
+#
+
+sub create_berk_table
+{
+    my($input_file, $key_columns, $value_columns, $db_file, %opts) = @_;
+
+    require DB_File;
+    local $DB_File::DB_BTREE->{flags};
+    if ($opts{-multiple_values})
+    {
+	$DB_File::DB_BTREE->{flags} = &DB_File::R_DUP;
+    }
+    
+    my $ifh;
+
+    if ($opts{-sort})
+    {
+	my $sk = join(" ", map { "-k " . ($_ + 1) } @$key_columns);
+	my $cmd = "sort $sk $input_file";
+	print "Run $cmd\n";
+	
+	open($ifh, "$cmd |") or die "Cannot open sort $sk $input_file for reading: $!";
+    }
+    else
+    {
+	open($ifh, "<", $input_file) or die "Cannot open $input_file for reading: $!";
+    }
+
+    my $hash = {};
+    my $tie = tie %$hash, "DB_File", $db_file, O_RDWR | O_CREAT, 0666, $DB_File::DB_BTREE;
+    $tie or die "Cannot create $db_file: $!";
+
+    while (<$ifh>)
+    {
+	chomp;
+	my @a = split(/\t/);
+	my $k = join($;, @a[@$key_columns]);
+	my $v = join($;, @a[@$value_columns]);
+
+	$hash->{$k} = $v;
+    }
+    close($ifh);
+    undef $hash;
+    untie $tie;
+}
+
+sub open_berk_table
+{
+    my($table, %opts) = @_;
+
+    if (! -f $table)
+    {
+	warn "Cannot read table file $table\n";
+	return undef;
+    }
+
+    if ( ! eval { require BerkTable; } )
+    {
+	warn "Failed in require BerkTable.\n";
+        return undef;
+    }
+
+    my $h = {};
+    tie %$h, 'BerkTable', $table, %opts;
+    return $h;
+}
 
 our $AllColors;
 
@@ -2048,33 +2350,73 @@ sub map_to_families
 
     if (ref($fam2c))
     {
-    $fh = $fam2c;
+	$fh = $fam2c;
     }
     else
     {
-    if (!open($fh, "<", $fam2c))
-    {
-        die "Cannot open $fam2c: $!";
-    }
+	if (!open($fh, "<", $fam2c))
+	{
+	    die "Cannot open $fam2c: $!";
+	}
     }
     local $_ = <$fh>;
     chomp;
     my($fam, $peg) = split(/\t/);
     while (defined($fam))
     {
-    my $cur = $fam;
-    my @set;
-    while (defined($fam) && $fam eq $cur)
-    {
-        push(@set, $peg);
-        $_ = <$fh>;
-        chomp;
-        ($fam, $peg) = split(/\t/);
+	my $cur = $fam;
+	my @set;
+	while (defined($fam) && $fam eq $cur)
+	{
+	    push(@set, $peg);
+	    $_ = <$fh>;
+	    chomp;
+	    ($fam, $peg) = split(/\t/);
+	}
+	$func->($cur, \@set);
     }
-    $func->($cur, \@set);
-    }
-
 }
 
+use JSON::XS;
+
+sub write_encoded_object
+{
+    my ( $obj, $oh ) = @_;
+
+# If the user passes in a file, we open it here. Because it is opened in a local                                       
+# variable, it will be closed automatically when we go out of scope. An open handle                                    
+# passed in, however, will not be closed.                                                                              
+    my $handle;
+    if ( !ref $oh )
+    {
+        open( $handle, ">$oh" ) || die "Could not open output file $oh: $!";
+    }
+    else
+    {
+        $handle = $oh;
+    }
+
+    my $json = JSON::XS->new;
+    $json->pretty(1);
+    print $handle $json->encode($obj);
+}
+
+sub read_encoded_object
+{   
+    my ($encoded_file) = @_;
+
+    open( OBJ, "<$encoded_file" )
+	|| die "encoded_file $encoded_file could not be opened: $!";
+
+    my $obj;
+    my $json = JSON::XS->new;
+    {
+        local $/;
+        undef $/;
+        my $obj_txt = <OBJ>;
+        $obj = $json->decode($obj_txt);
+    }
+    return $obj;
+}
 
 1;
