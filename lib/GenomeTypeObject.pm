@@ -129,14 +129,15 @@ sub create_from_file
 =head2 $obj->destroy_to_file($filename)
 
 Write the given object in JSON form to the specified file.
-The object will be destroyed.
+The object will be rendered unusuable.
 
 =cut
 
 sub destroy_to_file {
     my ($self, $fileName) = @_;
     $self->prepare_for_return;
-    SeedUtils::write_encoded_object($fileName);
+    
+    SeedUtils::write_encoded_object($self, $fileName);
 }
 
 =head2 $obj->set_metadata({ ... });
@@ -338,7 +339,7 @@ sub add_features_from_list
 	    -location => \@locs,
 	    -function => $func,
 	    -aliases => \@aliases,
-	    -analysis_event_d => $event_id,
+	    -analysis_event_id => $event_id,
 	});
 	$map->{$id} = $new_id;
     }
