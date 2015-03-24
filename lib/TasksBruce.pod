@@ -8,4 +8,5 @@ This file contains Bruce's current to-do list.
     ## TODO document GenomeTypeObject
     ## TODO setup coordination between SEEDtk and SEED for certain modules-- email from Bob
     ## TODO schedule weekly rebuilds of the core repository
+    ## TODO GenomeTypeObject needs to be resynced to SEED
 

@@ -126,6 +126,19 @@ sub create_from_file
     return bless $self, $class;
 }
 
+=head2 $obj->destroy_to_file($filename)
+
+Write the given object in JSON form to the specified file.
+The object will be destroyed.
+
+=cut
+
+sub destroy_to_file {
+    my ($self, $fileName) = @_;
+    $self->prepare_for_return;
+    SeedUtils::write_encoded_object($fileName);
+}
+
 =head2 $obj->set_metadata({ ... });
 
 Set the metadata fields on this genome object based on a metadata
