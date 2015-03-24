@@ -373,6 +373,50 @@ sub run_redirected {
     return $retVal;
 }
 
+=head3 run_gathering_output
+
+    my $lines = gjo::SeedAware::run_gathering_output($command, @parms);
+
+or
+
+    my @lines = gjo::SeedAware::run_gathering_output($command, @parms);
+
+Run a command, returning the output in a list or string.
+
+=over 4
+
+=item command
+
+Command to execute.
+
+=item parms
+
+List containing the command parameters.
+
+=item RETURN
+
+In scalar context, returns a string containing the standard output. In list context, returns a list
+containing each line of the standard output.
+
+=back
+
+=cut
+
+sub run_gathering_output {
+    # Get the parameters.
+    my ($command, @parms) = @_;
+    # This will be the return variable.
+    my $retVal;
+    # Invoke the command.
+    run_redirected($command, @parms, { stdout => \$retVal });
+    # Return the result.
+    if (wantarray) {
+        return split /\n/, $retVal;
+    } else {
+        return $retVal;
+    }
+}
+
 
 =head3 system_with_redirect
 
