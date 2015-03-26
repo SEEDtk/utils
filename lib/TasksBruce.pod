@@ -7,6 +7,6 @@ This file contains Bruce's current to-do list.
     ## TODO add a method for queries based on secondary fields
     ## TODO document GenomeTypeObject
     ## TODO setup coordination between SEEDtk and SEED for certain modules-- email from Bob
-    ## TODO schedule weekly rebuilds of the core repository
-    ## TODO GenomeTypeObject needs to be resynced to SEED
+    ## TODO Separate kmer utilities into a pm.
+    ## TODO add Ross's pseed genomes to the database
 
