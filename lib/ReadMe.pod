@@ -79,14 +79,13 @@ updating the database.
 
 =item RASTtk
 
-This module contains code that is intended to be shared to other projects. It relies
-only on libraries in the C<utils> component.
+This module contains code that is intended to be shared to other projects. It requires
+no other modules to run.
 
 =item utils
 
-This module contains code that does not relate to the database and requires no other
-modules to run.
-
+This module contains code that does not relate to the database and requires only
+modules in C<RASTtk> to run.
 
 =back
 
