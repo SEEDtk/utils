@@ -24,7 +24,7 @@ package gjo::SeedAware;
     use File::Spec;
     use File::Temp;
     use FIG_Config;
-    use Tracer;
+    use StringUtils;
 
 =head1 Operating System Access Methods
 

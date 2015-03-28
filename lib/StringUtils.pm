@@ -17,7 +17,7 @@
 ########################################################################
 
 
-package Tracer;
+package StringUtils;
 
     use strict;
     use FIG_Config;
@@ -59,7 +59,7 @@ package Tracer;
 
 =head3 ParseDate
 
-    my $time = Tracer::ParseDate($dateString);
+    my $time = StringUtils::ParseDate($dateString);
 
 Convert a date into a PERL time number. This method expects a date-like string
 and parses it into a number. The string must be vaguely date-like or it will
@@ -146,7 +146,7 @@ sub ParseDate {
 
 =head3 LogErrors
 
-    Tracer::LogErrors($fileName);
+    StringUtils::LogErrors($fileName);
 
 Route the standard error output to a log file.
 
@@ -258,7 +258,7 @@ sub Cluck {
 
 =head3 LongMess
 
-    my @lines = Tracer::LongMess();
+    my @lines = StringUtils::LongMess();
 
 Return a stack trace with all tracing methods removed. The return will be in the form of a list
 of message strings.
@@ -284,11 +284,11 @@ sub LongMess {
 
 =head3 GetFile
 
-    my @fileContents = Tracer::GetFile($fileName);
+    my @fileContents = StringUtils::GetFile($fileName);
 
     or
 
-    my $fileContents = Tracer::GetFile($fileName);
+    my $fileContents = StringUtils::GetFile($fileName);
 
 Return the entire contents of a file. In list context, line-ends are removed and
 each line is a list element. In scalar context, line-ends are replaced by C<\n>.
@@ -338,7 +338,7 @@ sub GetFile {
 
 =head3 PutFile
 
-    Tracer::PutFile($fileName, \@lines);
+    StringUtils::PutFile($fileName, \@lines);
 
 Write out a file from a list of lines of text.
 
@@ -381,7 +381,7 @@ sub PutFile {
 
 =head3 ParseRecord
 
-    my @fields = Tracer::ParseRecord($line);
+    my @fields = StringUtils::ParseRecord($line);
 
 Parse a tab-delimited data line. The data line is split into field values. Embedded tab
 and new-line characters in the data line must be represented as C<\t> and C<\n>, respectively.
@@ -426,7 +426,7 @@ sub ParseRecord {
 
 =head3 Merge
 
-    my @mergedList = Tracer::Merge(@inputList);
+    my @mergedList = StringUtils::Merge(@inputList);
 
 Sort a list of strings and remove duplicates.
 
@@ -566,7 +566,7 @@ sub Open {
 
 =head3 FindNamePart
 
-    my ($fileName, $start, $len) = Tracer::FindNamePart($fileSpec);
+    my ($fileName, $start, $len) = StringUtils::FindNamePart($fileSpec);
 
 Extract the portion of a file specification that contains the file name.
 
@@ -750,7 +750,7 @@ sub ChDir {
 
 =head3 GetLine
 
-    my @data = Tracer::GetLine($handle);
+    my @data = StringUtils::GetLine($handle);
 
 Read a line of data from a tab-delimited file.
 
@@ -797,7 +797,7 @@ sub GetLine {
 
 =head3 PutLine
 
-    Tracer::PutLine($handle, \@fields, $eol);
+    StringUtils::PutLine($handle, \@fields, $eol);
 
 Write a line of data to a tab-delimited file. The specified field values will be
 output in tab-separated form, with a trailing new-line.
@@ -830,7 +830,7 @@ sub PutLine {
 
 =head3 PrintLine
 
-    Tracer::PrintLine($line);
+    StringUtils::PrintLine($line);
 
 Print a line of text with a trailing new-line.
 
@@ -870,7 +870,7 @@ sub IDHASH {
 
 =head3 Pluralize
 
-    my $plural = Tracer::Pluralize($word);
+    my $plural = StringUtils::Pluralize($word);
 
 This is a very simple pluralization utility. It adds an C<s> at the end
 of the input word unless it already ends in an C<s>, in which case it
@@ -906,7 +906,7 @@ sub Pluralize {
 
 =head3 Numeric
 
-    my $okFlag = Tracer::Numeric($string);
+    my $okFlag = StringUtils::Numeric($string);
 
 Return the value of the specified string if it is numeric, or an undefined value
 if it is not numeric.
@@ -951,7 +951,7 @@ sub Numeric {
 
 =head3 ParseParm
 
-    my $listValue = Tracer::ParseParm($string);
+    my $listValue = StringUtils::ParseParm($string);
 
 Convert a parameter into a list reference. If the parameter is undefined,
 an undefined value will be returned. Otherwise, it will be parsed as a
@@ -988,7 +988,7 @@ sub ParseParm {
 
 =head3 Now
 
-    my $string = Tracer::Now();
+    my $string = StringUtils::Now();
 
 Return a displayable time stamp containing the local time. Whatever format this
 method produces must be parseable by L</ParseDate>.
@@ -1001,7 +1001,7 @@ sub Now {
 
 =head3 DisplayTime
 
-    my $string = Tracer::DisplayTime($time);
+    my $string = StringUtils::DisplayTime($time);
 
 Convert a time value to a displayable time stamp. Whatever format this
 method produces must be parseable by L</ParseDate>.
@@ -1038,9 +1038,49 @@ sub _p2 {
     return $value;
 }
 
+=head3 NameTime
+
+    my $string = StringUtils::NameTime($prefix, $time, $suffix);
+
+Convert a time value to a file name. The three pieces of the file name will be separated by periods.
+
+=over 4
+
+=item prefix
+
+First part of the file name, to precede the time.
+
+=item time
+
+Time to display, in seconds since the epoch, or C<undef> if the time is unknown.
+
+=item suffix
+
+Suffix to put on the file name.
+
+=item RETURN
+
+Returns a file name containing a sortable time stamp. The time stamp will be all zeroes if the incoming time is undefined.
+
+=back
+
+=cut
+
+sub NameTime {
+    my ($prefix, $time, $suffix) = @_;
+    my $middle = "0000-00-00_00-00-00";
+    if (defined $time) {
+        my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime($time);
+        $middle = _p2($year + 1900) . "-" . _p2($mon + 1) . "-" . ($mday) . "_" .
+                  _p2($hour) . "-" . _p2($min) . "-" . _p2($sec);
+    }
+    my $retVal = join(".", $prefix, $middle, $suffix);
+    return $retVal;
+}
+
 =head3 Escape
 
-    my $codedString = Tracer::Escape($realString);
+    my $codedString = StringUtils::Escape($realString);
 
 Escape a string for use in a command. Tabs will be replaced by C<\t>, new-lines
 replaced by C<\n>, carriage returns will be deleted, and backslashes will be doubled.
@@ -1099,7 +1139,7 @@ sub Escape {
 
 =head3 UnEscape
 
-    my $realString = Tracer::UnEscape($codedString);
+    my $realString = StringUtils::UnEscape($codedString);
 
 Replace escape sequences with their actual equivalents. C<\t> will be replaced by
 a tab, C<\n> by a new-line character, and C<\\> by a backslash. C<\r> codes will
@@ -1162,7 +1202,7 @@ sub UnEscape {
 
 =head3 Percent
 
-    my $percent = Tracer::Percent($number, $base);
+    my $percent = StringUtils::Percent($number, $base);
 
 Returns the percent of the base represented by the given number. If the base
 is zero, returns zero.
@@ -1200,7 +1240,7 @@ sub Percent {
 
 =head3 In
 
-    my $flag = Tracer::In($value, $min, $max);
+    my $flag = StringUtils::In($value, $min, $max);
 
 Return TRUE if the value is between the minimum and the maximum, else FALSE.
 
@@ -1324,7 +1364,7 @@ sub Max {
 
 =head3 Strip
 
-    my $string = Tracer::Strip($line);
+    my $string = StringUtils::Strip($line);
 
 Strip all line terminators off a string. This is necessary when dealing with files
 that may have been transferred back and forth several times among different
@@ -1356,7 +1396,7 @@ sub Strip {
 
 =head3 Trim
 
-    my $string = Tracer::Trim($line);
+    my $string = StringUtils::Trim($line);
 
 Trim all spaces from the beginning and ending of a string.
 
@@ -1388,7 +1428,7 @@ sub Trim {
 
 =head3 Pad
 
-    my $paddedString = Tracer::Pad($string, $len, $left, $padChar);
+    my $paddedString = StringUtils::Pad($string, $len, $left, $padChar);
 
 Pad a string to a specified length. The pad character will be a
 space, and the padding will be on the right side unless specified
@@ -1449,7 +1489,7 @@ sub Pad {
 
 =head3 Quoted
 
-    my $string = Tracer::Quoted($var);
+    my $string = StringUtils::Quoted($var);
 
 Convert the specified value to a string and enclose it in single quotes.
 If it's undefined, the string C<undef> in angle brackets will be used
@@ -1541,7 +1581,7 @@ sub TICK {
 
 =head3 CommaFormat
 
-    my $formatted = Tracer::CommaFormat($number);
+    my $formatted = StringUtils::CommaFormat($number);
 
 Insert commas into a number.
 
@@ -1578,7 +1618,7 @@ sub CommaFormat {
 
 =head3 CompareLists
 
-    my ($inserted, $deleted) = Tracer::CompareLists(\@newList, \@oldList, $keyIndex);
+    my ($inserted, $deleted) = StringUtils::CompareLists(\@newList, \@oldList, $keyIndex);
 
 Compare two lists of tuples, and return a hash analyzing the differences. The lists
 are presumed to be sorted alphabetically by the value in the $keyIndex column.
@@ -1645,7 +1685,7 @@ sub CompareLists {
 
 =head3 Cmp
 
-    my $cmp = Tracer::Cmp($a, $b);
+    my $cmp = StringUtils::Cmp($a, $b);
 
 This method performs a universal sort comparison. Each value coming in is
 separated into a text parts and number parts. The text
@@ -1738,7 +1778,7 @@ sub _Parse {
 
 =head3 ListEQ
 
-    my $flag = Tracer::ListEQ(\@a, \@b);
+    my $flag = StringUtils::ListEQ(\@a, \@b);
 
 Return TRUE if the specified lists contain the same strings in the same
 order, else FALSE.
@@ -1777,7 +1817,7 @@ sub ListEQ {
 
 =head3 Clean
 
-    my $cleaned = Tracer::Clean($string);
+    my $cleaned = StringUtils::Clean($string);
 
 Clean up a string for HTML display. This not only converts special
 characters to HTML entity names, it also removes control characters.
@@ -1817,7 +1857,7 @@ sub Clean {
 
 =head3 SortByValue
 
-    my @keys = Tracer::SortByValue(\%hash);
+    my @keys = StringUtils::SortByValue(\%hash);
 
 Get a list of hash table keys sorted by hash table values.
 
@@ -1847,7 +1887,7 @@ sub SortByValue {
 
 =head3 GetSet
 
-    my $value = Tracer::GetSet($object, $name => $newValue);
+    my $value = StringUtils::GetSet($object, $name => $newValue);
 
 Get or set the value of an object field. The object is treated as an
 ordinary hash reference. If a new value is specified, it is stored in the

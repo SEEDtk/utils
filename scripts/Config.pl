@@ -170,10 +170,11 @@ for my $module (CORE) {
     }
 }
 # This hash will map each module to its directory.
+my $modBaseDir = ($eclipseMode ? $base_dir : "$projDir/modules");
 my %modules;
 for my $module (@FIG_Config::modules) {
     # Compute the directory name depending on the mode.
-    my $dir = ($eclipseMode ? "$base_dir/$module" : "$projDir/modules/$module");
+    my $dir = "$modBaseDir/$module";
     # Make sure it exists.
     if (! -d $dir) {
         die "Could not find expected module directory $dir.";
@@ -224,7 +225,7 @@ if ($opt->fc eq 'off') {
     }
     # Write the FIG_Config.
     print "Writing configuration to $outputName.\n";
-    WriteAllParams($outputName, \%modules, $projDir, $dataRootDir, $webRootDir, $winMode, $opt, \%oldenv);
+    WriteAllParams($outputName, $modBaseDir, \%modules, $projDir, $dataRootDir, $webRootDir, $winMode, $opt, \%oldenv);
     # Execute it to get the latest variable values.
     print "Reading back new configuration.\n";
     RunFigConfig($outputName);
@@ -374,8 +375,8 @@ sub RunFigConfig {
 
 =head3 WriteAllParams
 
-    WriteAllParams($fig_config_name, \%modules, $projDir, $dataRootDir,
-            $webRootDir, $winMode, $opt);
+    WriteAllParams($fig_config_name, $modBaseDir, \%modules, $projDir,
+                   $dataRootDir, $webRootDir, $winMode, $opt);
 
 Write out the B<FIG_Config> file to the specified location. This method
 is mostly calls to the L</WriteParam> method, which provides a concise
@@ -389,6 +390,10 @@ that the existing values are known.
 
 File name for the B<FIG_Config> file. The parameter code will be written to
 this file.
+
+=item modBaseDir
+
+Base directory for the program modules.
 
 =item modules
 
@@ -420,7 +425,7 @@ Command-line options object.
 
 sub WriteAllParams {
     # Get the parameters.
-    my ($fig_config_name, $modules, $projDir, $dataRootDir, $webRootDir, $winMode, $opt) = @_;
+    my ($fig_config_name, $modBaseDir, $modules, $projDir, $dataRootDir, $webRootDir, $winMode, $opt) = @_;
     # Open the FIG_Config for output.
     open(my $oh, ">$fig_config_name") || die "Could not open $fig_config_name: $!";
     # Write the initial lines.
@@ -436,8 +441,12 @@ sub WriteAllParams {
     Env::WriteParam($oh, 'URL for the directory of temporary files', temp_url => 'http://fig.localhost/Tmp');
     Env::WriteParam($oh, 'TRUE for windows mode', win_mode => ($winMode ? 1 : 0));
     Env::WriteParam($oh, 'source code project directory', proj => $projDir);
+    Env::WriteParam($oh, 'location of shared code', cvsroot => '');
     ## Put new non-Shrub parameters here.
-    # Now we need to build our directory lists.
+    # Now we need to build our directory lists. We start with the module base directory.
+    Env::WriteLines($oh, "", "# code module base directory",
+            "our \$mod_base = '$modBaseDir';");
+    # Now we set up the directory and module lists.
     my @scripts = map { "$modules->{$_}/scripts" } @FIG_Config::modules;
     my @libs = map { "$modules->{$_}/lib" } @FIG_Config::modules;
     Env::WriteLines($oh, "", "# list of script directories",
@@ -446,6 +455,8 @@ sub WriteAllParams {
             "our \@libs = ('" . join("', '", "$projDir/config", @libs) . "');",
             "", "# list of project modules",
             "our \@modules = qw(" . join(" ", @FIG_Config::modules) . ");",
+            "", "# list of shared modules",
+            "our \@shared = qw(" . join(" ", @FIG_Config::shared) . ");",
             );
     # Set up the tool directories.
     my $packages = "$FIG_Config::proj/packages";
@@ -867,10 +878,10 @@ sub SetupBinaries {
             open(my $oh, ">$fileName") || die "Could not open $binaryName: $!";
             print $oh "#!/usr/bin/env bash\n";
             if ($type eq 'pl') {
-            	# For PERL, we ask perl to execute the file.
+                    # For PERL, we ask perl to execute the file.
                 print $oh "perl $scriptDir/$script \"\$\@\"\n";
             } elsif ($type eq 'sh') {
-            	# For bash, we execute the file directly. This requires updating permissions.
+                    # For bash, we execute the file directly. This requires updating permissions.
                 print $oh "$scriptDir/$script \"\$\@\"\n";
                 chmod 0x755, "$scriptDir/$script";
             } else {
