@@ -25,8 +25,9 @@ use File::stat;
 use StringUtils;
 use Stats;
 use File::Copy::Recursive;
+use DateTime;
 
-=head1 Coordinate Project Updates
+=head1 Coordinate SEED and SEEDtk Project Source Updates
 
     CheckUpdates.pl [ options ] mod1 mod2 ...
 
@@ -118,16 +119,23 @@ if ($@) {
 }
 # Create the log file.
 my $oh;
-if ($opt->log ne 'none') {
-    # We'll compute the log file name in here.
-    my $logFile = $opt->log;
-    if (! $logFile) {
-        # Insure we have a logging directory.
+# We'll compute the log file name in here.
+my $logFile = $opt->log;
+if (! $logFile) {
+    # Here we have to default the log file. If we are not updating, then the log file
+    # defaults to no log at all.
+    if ($opt->check || $opt->test) {
+        $logFile = 'none';
+    } else {
+        # Here the user wants a timestamped logfile. Insure we have a logging directory.
         my $logDir = "$FIG_Config::proj/logs";
         File::Copy::Recursive::pathmk($logDir);
         # Here the log file name is computed using the date.
-        $logFile = $logDir . StringUtils::NameTime('sync', time(), 'log');
+        $logFile = join("/", $logDir, StringUtils::NameTime('sync', time(), 'log'));
     }
+}
+# Open the log file if the user wants one.
+if ($logFile ne 'none') {
     open($oh, ">$logFile") || die "Could not open $logFile: $!";
 }
 Print($oh, "Beginning synchronization run.\n");
@@ -136,12 +144,13 @@ my $syncTime;
 my $syncFile = "$FIG_Config::proj/config/sync.txt";
 if (! -s $syncFile) {
     Print($oh, "No synchronization file. Null date will be used.\n");
-    $syncTime = 0;
+    $syncTime = DateTime->from_epoch(epoch => 0);
 } else {
     open(my $sh, "<$syncFile") or die "Could not open synchronization date file: $!";
     my $timeStamp = <$sh>;
     chomp $timeStamp;
     $syncTime = DateTime::Format::Flexible->parse_datetime($timeStamp);
+    print "Incoming synchronization date is " . $syncTime->strftime("%D %T") . "\n";
 }
 # Get the SEED directories.
 my %seed = (lib => $opt->seedlib, scripts => $opt->seedscripts);
@@ -258,7 +267,7 @@ if ($errors) {
                 my $fullName = "$fullDir/$file";
                 # Get this file's modification time.
                 my $stat = stat $fullName;
-                my $fileTime = $stat->mtime;
+                my $fileTime = DateTime->from_epoch(epoch => $stat->mtime);
                 # Look for the file on the SEED side.
                 my $seedData = $seedFiles{$dir}{$file};
                 # If it is not found, we have an add.
@@ -278,12 +287,14 @@ if ($errors) {
                         $stats->Add(cvsChangeDetected => 1);
                         push @copies, [$fullSeedName, $fullName];
                         $needsAnalysis++;
+                        Print($oh, "$dir file $file in $mod updated from SEED.\n");
                     } elsif ($fileTime > $seedTime) {
                         # Here our file is newer than the CVS file, which is unchanged.
                         # Copy from us to the SEED.
                         $stats->Add(ourChangeDetected => 1);
                         push @copies, [$fullName, $fullSeedName];
                         $seedChanges{$dir}++;
+                        Print($oh, "$dir file $file in SEED updated from $mod.\n");
                     } else {
                         # Here everything is in sync.
                         $stats->Add(noChangeDetected => 1);
@@ -342,7 +353,7 @@ if ($errors) {
             die "Could not open sync file $syncFile: $!";
         my $now = StringUtils::Now();
         Print($oh, "Sync time set to $now.\n");
-        print $sh, "$now\n";
+        print $sh "$now\n";
     }
 }
 # All done. Show the statistics.
