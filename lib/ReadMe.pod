@@ -89,6 +89,9 @@ modules in C<RASTtk> to run.
 
 =back
 
+When you add a module, you need to include it in the B<@modules> member of L<FIG_Config>
+in order to get it to work in Eclipse. In Unix, you need to rerun the C<bootstrap> script.
+
 =head2 The Data Directory
 
 The default data directory structure includes two main folders.
