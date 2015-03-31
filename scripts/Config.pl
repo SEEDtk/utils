@@ -867,7 +867,7 @@ sub SetupBinaries {
         # Get the scripts for this module.
         my $scriptDir = "$modules->{$module}/scripts";
         opendir(my $dh, $scriptDir) || die "Could not open script directory $scriptDir: $1";
-        my @scripts = grep { $_ =~ /\.(?:pl|sh)/i } readdir($dh);
+        my @scripts = grep { $_ =~ /\.(?:pl|sh)$/i } readdir($dh);
         closedir $dh;
         # Loop through them, creating the wrappers.
         for my $script (@scripts) {
