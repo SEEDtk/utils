@@ -229,8 +229,8 @@ application.
 In the examples below, it will be assumed your user name is C<self>. Simply substitute your real username
 when typing the commands.
 
-First, you need a user name and password on GITHUB, and it must be an authorized contributor to the C<seedtk_test>
-repository. To insure that you are appropriately identtified, tell GIT your name and EMAIL.
+First, you need a user name and password on GITHUB, and it must be an authorized member of the
+B<SEEDtk> group. To insure that you are appropriately identtified, tell GIT your name and EMAIL.
 
     git config user.name yourFullName
     git config user.email yourGitHubEmail
@@ -270,7 +270,7 @@ You will be prompted for a password on each one
 
 Next you need to create the data and web directories.
 
-    mkdir Data /homes/self/public_html/SEEDtk
+    mkdir Data
 
 Activate the environment by typing
 

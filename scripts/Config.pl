@@ -272,10 +272,14 @@ if ($eclipseMode) {
     WriteAllConfigs($winMode, \%modules, $projDir, $opt);
     if (! $winMode) {
         # For an Eclipse Mac installation, we have to set up binary versions of the scripts
-        # and make the
+        # and make them executable.
         SetupBinaries($projDir, \%modules, $opt);
         # We also need to fix the CGI permissions.
         SetupCGIs($FIG_Config::web_dir, $opt);
+    } else {
+        # For a Eclipse Windows installation, we have to set up DOS-style version of the
+        # shell scripts.
+        SetupCommands(\%modules, $opt);
     }
 }
 # Now we need to create the pull-all script.
@@ -813,7 +817,7 @@ sub FixPath {
     # Convert the path to a canonical absolute.
     my $retVal = File::Spec->rel2abs($path);
     # Convert backslashes to slashes.
-    $retVal =~ tr/\\/\//;
+    $retVal =~ tr#\\#/#;
     # Remove the drive letter (if any).
     $retVal =~ s/^\w://;
     # Return the result.
@@ -866,7 +870,7 @@ sub SetupBinaries {
     for my $module (keys %$modules) {
         # Get the scripts for this module.
         my $scriptDir = "$modules->{$module}/scripts";
-        opendir(my $dh, $scriptDir) || die "Could not open script directory $scriptDir: $1";
+        opendir(my $dh, $scriptDir) || die "Could not open script directory $scriptDir: $!";
         my @scripts = grep { $_ =~ /\.(?:pl|sh)$/i } readdir($dh);
         closedir $dh;
         # Loop through them, creating the wrappers.
@@ -905,6 +909,70 @@ sub SetupBinaries {
         print "Obsolete script $badBin deleted.\n";
     }
 }
+
+
+=head3 SetupCommands
+
+    SetupCommands(\%modules, $opt);
+
+Create DOS versions of all the bash shell scripts in the module
+directories. This involves creating a file with a CMD extension, changing
+the continuation characters from C<\> to C<^>, and changing the parameter
+marks from $n to %n.
+
+=item modules
+
+Reference to a hash that maps each module name to its directory. The
+shell scripts are all in the C<scripts> subdirectories of the module
+directories.
+
+=item opt
+
+The command-line options from the configuration script.
+
+=back
+
+=cut
+
+sub SetupCommands {
+    # Get the parameters.
+    my ($modules, $opt) = @_;
+    # Loop through the modules.
+    for my $module (keys %$modules) {
+        # Get the scripts for this module.
+        my $scriptDir = "$modules->{$module}/scripts";
+        opendir(my $dh, $scriptDir) || die "Could not open script directory $scriptDir: $!";
+        my @scripts = grep { $_ =~ /\.sh$/i } readdir($dh);
+        closedir $dh;
+        # Loop through the shell scripts found.
+        for my $script (@scripts) {
+            # Open this script for input.
+            open(my $ih, "<$scriptDir/$script") || die "Could not open script file $script: $!";
+            # Open the corresponding command file for output.
+            my $outFile = $script;
+            $outFile =~ s/\.sh$/.cmd/;
+            open(my $oh, ">$scriptDir/$outFile") || die "Could not open output file $outFile: $!";
+            # Turn off echoing.
+            print $oh "\@ECHO OFF\n";
+            # Loop through the input.
+            while (! eof $ih) {
+                my $line = <$ih>;
+                # Translate the continuation character.
+                if ($line =~ /(.+)\\$/) {
+                    $line = "$1^\n";
+                }
+                # Translate variable markers.
+                $line =~ s/\$(\d+)/%$1/g;
+                # Write the line.
+                print $oh $line;
+            }
+            # Close the output file.
+            close $oh;
+            print "Script $outFile created.\n";
+        }
+    }
+}
+
 
 =head3 SetupCGIs
 

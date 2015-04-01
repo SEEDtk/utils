@@ -25,6 +25,7 @@ use gjo::alignment;
 use gjoseqlib;
 use gjo::BlastParse;
 use gjo::SeedAware;
+use File::Copy::Recursive;
 
 =head1 BLAST Interface Module
 
@@ -542,7 +543,7 @@ sub blast
     if (! $save_temp)
     {
         delete $parms->{tmp_dir};
-        system( "rm", "-fr", $tempD );
+        File::Copy::Recursive::pathrmdir( $tempD );
     }
 
     return wantarray ? @$user_output : $user_output;
