@@ -73,7 +73,7 @@ sub executable_for {
     my ($retVal, $path);
     my @paths = split $delim, $ENV{PATH};
     push @paths, @FIG_Config::tools;
-    while (! $retVal && ($path = pop @paths)) {
+    while (! $retVal && defined($path = pop @paths)) {
         # Form the execution name.
         my $testName = File::Spec->catfile($path, $programName);
         # Check it with all the suffixes.

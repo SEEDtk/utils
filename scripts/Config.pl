@@ -664,10 +664,15 @@ sub WriteAllConfigs {
         if ($opt->gfw) {
             $paths .= ';%localappdata%\GitHub\PORTAB~1\cmd'
         }
-        # Add the project directory.
+        # Add the project directory if we need it.
         my $projDirForPath = $projDir;
         $projDirForPath =~ tr/\//\\/;
-        $paths .= ";$projDirForPath";
+        if (index($paths, $projDirForPath) < 0) {
+            if (substr($paths, -1, 1) ne ';') {
+                $paths .= ';';
+            }
+            $paths .= $projDirForPath;
+        }
         print $oh "path $paths\n";
     } else {
         # On the Mac, we simply put the bin subdirectory in the path.
