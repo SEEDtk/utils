@@ -702,8 +702,6 @@ sub WriteAllConfigs {
     } else {
         print $oh "export STK_TYPE=Mac\n";
     }
-    # Switch to the data directory.
-    print $oh "cd " . File::Spec->rel2abs($FIG_Config::data) . "\n";
     # Close the output file.
     close $oh;
     # If this is NOT Windows, fix the permissions.
