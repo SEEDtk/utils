@@ -17,7 +17,6 @@
 # http://www.theseed.org/LICENSE.TXT.
 #
 
-
 use strict;
 use File::Basename;
 use File::Spec;
@@ -446,6 +445,7 @@ sub WriteAllParams {
     Env::WriteParam($oh, 'TRUE for windows mode', win_mode => ($winMode ? 1 : 0));
     Env::WriteParam($oh, 'source code project directory', proj => $projDir);
     Env::WriteParam($oh, 'location of shared code', cvsroot => '');
+    Env::WriteParam($oh, 'TRUE to swtich to the data directory during setup', data_switch => 0);
     ## Put new non-Shrub parameters here.
     # Now we need to build our directory lists. We start with the module base directory.
     Env::WriteLines($oh, "", "# code module base directory",
@@ -701,6 +701,10 @@ sub WriteAllConfigs {
         print $oh "SET STK_TYPE=Windows\n";
     } else {
         print $oh "export STK_TYPE=Mac\n";
+    }
+    # If the user wants a data directory switch, put it here.
+    if ($FIG_Config::data_switch) {
+        print $oh "cd $FIG_Config::data\n";
     }
     # Close the output file.
     close $oh;
