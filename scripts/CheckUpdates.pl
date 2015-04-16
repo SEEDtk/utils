@@ -184,7 +184,7 @@ for my $dir (keys %seed) {
     for my $change (@changes) {
         $stats->Add(cvsOutput => 1);
         if ($change =~ /(\w)\s+(.+)/ && ! $stats{$1}) {
-            Print("File $2 is not up-to-date. Status $1.\n");
+            Print($oh, "File $2 is not up-to-date. Status $1.\n");
             $errors++;
         }
     }
