@@ -1,0 +1,18 @@
+=head1 Global Files List
+
+This document contains a list of all the files found in the Global subdirectory of the SEEDtk data directory.
+
+=over 4
+
+=item uni.roles
+
+A list of the universal roles required for metagenomic analysis. Each role in this file occurs at most once in
+each genome and occurs in most genomes known.
+
+=item representative.genomes
+
+A list of genomes considered to be representative. That is, all other bacterial genomes are fairly close and all
+genomes in this set are fairly distant. The file is tab-delimited. Each record contains (0) a genome ID and (1) the
+genome name.
+
+=back
