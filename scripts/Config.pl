@@ -194,6 +194,8 @@ if (! defined $FIG_Config::data) {
     } elsif (! -d $dataRootDir) {
         die "The specified data root directory $dataRootDir was not found.";
     }
+} else {
+    $dataRootDir = $FIG_Config::data;
 }
 # Make sure we have the web directory if there is no web root in
 # the command-line parameters.
@@ -204,6 +206,8 @@ if (! defined $FIG_Config::web_dir) {
     } elsif (! -d $webRootDir) {
         die "The specified web root directory $webRootDir was not found.";
     }
+} else {
+    $webRootDir = $FIG_Config::web_dir;
 }
 #If the FIG_Config write has NOT been turned off, then write the FIG_Config.
 if ($opt->fc eq 'off') {
@@ -241,6 +245,12 @@ if ($opt->dirs) {
     # Insure we have the web paths.
     BuildPaths($winMode, Web => $FIG_Config::web_dir, qw(img Tmp logs));
 }
+# Insure we have the global directory path.
+if (! -d $FIG_Config::global) {
+    print "Creating $FIG_Config::global.\n";
+    File::Path::make_path($FIG_Config::global)
+}
+BuildPaths($winMode, Data => $FIG_Config::data, qw(Global));
 # Do we have a Web project?
 my $weblib = "$FIG_Config::web_dir/lib";
 if (-d $weblib) {
@@ -446,6 +456,7 @@ sub WriteAllParams {
     Env::WriteParam($oh, 'source code project directory', proj => $projDir);
     Env::WriteParam($oh, 'location of shared code', cvsroot => '');
     Env::WriteParam($oh, 'TRUE to swtich to the data directory during setup', data_switch => 0);
+    Env::WriteParam($oh, 'location of global file directory', global => "$dataRootDir/Global");
     ## Put new non-Shrub parameters here.
     # Now we need to build our directory lists. We start with the module base directory.
     Env::WriteLines($oh, "", "# code module base directory",

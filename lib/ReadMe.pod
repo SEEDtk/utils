@@ -94,7 +94,7 @@ in order to get it to work in Eclipse. In Unix, you need to rerun the C<bootstra
 
 =head2 The Data Directory
 
-The default data directory structure includes two main folders.
+The default data directory structure includes four main folders.
 
 =over 4
 
@@ -103,27 +103,34 @@ The default data directory structure includes two main folders.
 The default holding place for data to be loaded into the database. Genome
 directories are stored in C<Inputs/GenomeData> and subsystem directories in
 C<Inputs/SubSystemData>. The formats of these directories are discussed
-in L<ExchangeFormat>.
+in L<ExchangeFormat>. This directory can be overridden on the command line
+for most scripts (see L<Shrub/new_for_script>).
 
 =item LoadFiles
 
 The storage directory for the files used to load the database. This is
 very much a temporary work directory; however, the files are kept after
 loading (rather than being created and deleted as true temporary
-files) for error recovery and analysis purposes.
+files) for error recovery and analysis purposes. This directory can
+be overridden on the command line for most scripts (see L<Shrub/new_for_script>).
+
+=item DnaRepo
+
+This is the default I<DNA repository>, which contains the DNA sequences for
+genomes in the database.  This directory belongs with the database, so a single
+directory is shared by all users of the same database. When you change
+databases, you must also change the DNA repository to match. This change
+is effected using command-line options (see L<Shrub/new_for_script>).
+
+=item Global
+
+This directory contains text files with useful information culled from the
+database. The files should be fairly small, and represent data that is common
+to most or all genomes. A list of all the files in this directory can be
+found in L<GlobalFiles>.
 
 =back
 
-These directories are the assumed defaults when doing database loads and
-exports; however, they can always be overridden from the command line.
-(See L<Shrub/new_for_script> for more information about the standard
-database command-line options.)
-
-There is also a data directory associated with the database. The DNA
-sequences are kept in FASTA files in a directory called the I<DNA
-repository>. This directory belongs with the database, so a single
-directory is shared by all users of the same database. When you change
-databases, you must also change the DNA repository to match.
 
 =head2 The Web Directory
 
