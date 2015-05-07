@@ -224,7 +224,7 @@ if ($opt->fc eq 'off') {
     }
     # Write the FIG_Config.
     print "Writing configuration to $outputName.\n";
-    WriteAllParams($outputName, $modBaseDir, \%modules, $projDir, $dataRootDir, $webRootDir, $winMode, $opt, \%oldenv);
+    WriteAllParams($outputName, $modBaseDir, \%modules, $projDir, $dataRootDir, $webRootDir, $winMode, $opt);
     # Execute it to get the latest variable values.
     print "Reading back new configuration.\n";
     RunFigConfig($outputName);
@@ -268,7 +268,7 @@ if (-d $weblib) {
 # execution paths.
 if ($eclipseMode) {
     # Set up the paths and PERL libraries.
-    WriteAllConfigs($winMode, \%modules, $projDir, $opt);
+    WriteAllConfigs($winMode, \%modules, $projDir, $opt, \%oldenv);
     if (! $winMode) {
         # For an Eclipse Mac installation, we have to set up binary versions of the scripts
         # and make them executable.
