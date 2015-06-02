@@ -31,7 +31,7 @@ use IO::File;
 no warnings qw(once);
 
 ## THIS CONSTANT DEFINES THE CORE MODULES
-use constant CORE => qw(utils ERDB kernel RASTtk);
+use constant CORE => qw(utils ERDB kernel RASTtk tbltools);
 
 ## THIS CONSTANT DEFINES MODULES WITH SPECIAL INCLUDE LISTS
 use constant INCLUDES => { utils => ['utils', 'RASTtk'], RASTtk => ['RASTtk'] };
