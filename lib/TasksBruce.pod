@@ -8,5 +8,4 @@ This file contains Bruce's current to-do list.
     ## TODO document GenomeTypeObject
     ## TODO research installing DIAMOND http://ab.inf.uni-tuebingen.de/data/software/diamond/download/public/manual.pdf
     ## TODO in solid_projection, do not project to euks
-    ## TODO reload 2-oxoglutarate dehydrogenase
 
