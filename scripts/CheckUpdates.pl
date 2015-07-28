@@ -149,7 +149,7 @@ if (! -s $syncFile) {
     open(my $sh, "<$syncFile") or die "Could not open synchronization date file: $!";
     my $timeStamp = <$sh>;
     chomp $timeStamp;
-    $syncTime = DateTime::Format::Flexible->parse_datetime($timeStamp);
+    $syncTime = DateTime->from_epoch(epoch => $timeStamp);
     print "Incoming synchronization date is " . $syncTime->strftime("%D %T") . "\n";
 }
 # Get the SEED directories.
@@ -234,7 +234,7 @@ if ($errors) {
             $stats->Add(cvsEntryLine => 1);
             if ($line =~ m#^/([^/]+)/\d+\.\d+/([^/]+)/#) {
                 # Here we have a file name and date.
-                my ($name, $dateTime) = ($1, DateTime::Format::Flexible->parse_datetime($2));
+                my ($name, $dateTime) = ($1, DateTime::Format::Flexible->parse_datetime("$2 UTC"));
                 $seedFiles{$dir}{$name} = [$dateTime, "$fullDir/$name"];
                 $stats->Add(cvsEntryFile => 1);
             }
@@ -351,7 +351,7 @@ if ($errors) {
         # We are done. Record the sync time.
         open(my $sh, ">$syncFile") or
             die "Could not open sync file $syncFile: $!";
-        my $now = StringUtils::Now();
+        my $now = time();
         Print($oh, "Sync time set to $now.\n");
         print $sh "$now\n";
     }

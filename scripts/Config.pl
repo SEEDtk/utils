@@ -983,6 +983,7 @@ sub SetupCommands {
                 }
                 # Translate variable markers.
                 $line =~ s/\$(\d+)/%$1/g;
+                $line =~ s/\$\@/%*/g;
                 # Write the line.
                 print $oh $line;
             }
