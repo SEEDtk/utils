@@ -461,6 +461,10 @@ score drop permitted in initial gapped alignment
 
 score drop permitted in initial ungapped alignment
 
+=item minLen
+
+Minimum permissible match length, for filtering
+
 =back
 
 The following program-specific interfaces are also provided:
@@ -1772,6 +1776,7 @@ sub keep_hsp
     my( $hsp, $parms ) = @_;
 
     local $_;
+    return 0 if (($_ = $parms->{minLen})   && ($_ > $hsp->[10]));
     return 0 if (($_ = $parms->{minIden})  && ($_ > ($hsp->[11]/$hsp->[10])));
     return 0 if (($_ = $parms->{minPos})   && ($_ > ($hsp->[12]/$hsp->[10])));
     return 0 if (($_ = $parms->{minScr})   && ($_ >  $hsp->[6]));
