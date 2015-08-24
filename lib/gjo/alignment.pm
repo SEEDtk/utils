@@ -101,7 +101,7 @@ package gjo::alignment;
 
 use strict;
 use gjoseqlib;
-use gjo::SeedAware;
+use SeedAware;
 use File::Copy;
 use Carp;                       # Used for diagnostics
 eval { require Data::Dumper };  # Not present on all systems

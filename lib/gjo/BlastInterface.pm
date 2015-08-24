@@ -24,7 +24,7 @@ use strict;
 use gjo::alignment;
 use gjoseqlib;
 use gjo::BlastParse;
-use gjo::SeedAware;
+use SeedAware;
 use File::Copy::Recursive;
 
 =head1 BLAST Interface Module

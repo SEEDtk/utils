@@ -16,7 +16,7 @@
 #
 
 
-package gjo::SeedAware;
+package SeedAware;
 
     use strict;
     use warnings;
@@ -375,11 +375,11 @@ sub run_redirected {
 
 =head3 run_gathering_output
 
-    my $lines = gjo::SeedAware::run_gathering_output($command, @parms);
+    my $lines = SeedAware::run_gathering_output($command, @parms);
 
 or
 
-    my @lines = gjo::SeedAware::run_gathering_output($command, @parms);
+    my @lines = SeedAware::run_gathering_output($command, @parms);
 
 Run a command, returning the output in a list or string.
 
