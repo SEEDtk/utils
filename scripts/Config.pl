@@ -34,7 +34,7 @@ no warnings qw(once);
 use constant CORE => qw(utils ERDB kernel RASTtk tbltools);
 
 ## THIS CONSTANT DEFINES MODULES WITH SPECIAL INCLUDE LISTS
-use constant INCLUDES => { utils => ['utils', 'RASTtk'], RASTtk => ['RASTtk'] };
+use constant INCLUDES => { utils => ['utils', 'RASTtk'], RASTtk => ['RASTtk', 'utils'] };
 
 =head1 Generate SEEDtk Configuration Files
 
