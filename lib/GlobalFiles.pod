@@ -4,10 +4,15 @@ This document contains a list of all the files found in the Global subdirectory 
 
 =over 4
 
-=item uni.roles
+=item uni_roles.tbl
 
 A list of the universal roles required for metagenomic analysis. Each role in this file occurs at most once in
-each genome and occurs in most genomes known.
+most genomes and occurs in almost all prokaryotic genomes known. The file is tab-delimited, and each line contains
+(0) a function ID, (1) a count, and (2) a function description.
+
+=item rep_roles.tbl
+
+A list of the roles used to isolate representative genomes. The file contains one role ID per line.
 
 =item representative.genomes
 
