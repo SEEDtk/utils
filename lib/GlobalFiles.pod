@@ -20,4 +20,9 @@ A list of genomes considered to be representative. That is, all other bacterial 
 genomes in this set are fairly distant. The file is tab-delimited. Each record contains (0) a genome ID and (1) the
 genome name.
 
+=item roles_cdd.tbl
+
+A map of role IDs to CDD names. The file is tab-delimited. Each line contains a role ID followed by a comma-delimited
+list of CDD identifiers representing domains commonly associated with the role.
+
 =back
