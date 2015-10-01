@@ -21,6 +21,7 @@ package gjo::BlastParse;
     use strict;
     use warnings;
     use Carp;
+    use Hsp;
 
 =head1 Blast Parser
 
@@ -359,10 +360,10 @@ sub next_hsp {
         # We have an HSP. Pop off the type indicator.
         shift @$retVal;
         # Add the query and subject.
-        $retVal = [@{$self->{query}}[1,2,3], @{$self->{subject}}[1,2,3], @$retVal];
+        $retVal = Hsp->new(@{$self->{query}}[1,2,3], @{$self->{subject}}[1,2,3], @$retVal);
     }
     # Return the HSP record.
-    return $retVal;
+    return $retVal
 }
 
 ## TODO BlastParse all_queries [Q, [S, [H, H ...]], [S, [H, H, ...]], ...], ...

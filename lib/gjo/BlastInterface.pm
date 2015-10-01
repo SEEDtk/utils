@@ -1775,15 +1775,18 @@ sub keep_hsp
 {
     my( $hsp, $parms ) = @_;
 
-    local $_;
-    return 0 if (($_ = $parms->{minLen})   && ($_ > $hsp->[10]));
-    return 0 if (($_ = $parms->{minIden})  && ($_ > ($hsp->[11]/$hsp->[10])));
-    return 0 if (($_ = $parms->{minPos})   && ($_ > ($hsp->[12]/$hsp->[10])));
-    return 0 if (($_ = $parms->{minScr})   && ($_ >  $hsp->[6]));
+    my $x;
+    if (! defined $hsp->[10]) {
+        print "hsp error.\n";
+    }
+    return 0 if (($x = $parms->{minLen})   && ($x > $hsp->[10]));
+    return 0 if (($x = $parms->{minIden})  && ($x > ($hsp->[11]/$hsp->[10])));
+    return 0 if (($x = $parms->{minPos})   && ($x > ($hsp->[12]/$hsp->[10])));
+    return 0 if (($x = $parms->{minScr})   && ($x >  $hsp->[6]));
     #  This could be defined with the min aligned length, not the alignment length
-    return 0 if (($_ = $parms->{minNBScr}) && ($_ >  $hsp->[6]/$hsp->[10]));
-    return 0 if (($_ = $parms->{minCovQ})  && ($_ > ((abs($hsp->[16]-$hsp->[15])+1)/$hsp->[2])));
-    return 0 if (($_ = $parms->{minCovS})  && ($_ > ((abs($hsp->[19]-$hsp->[18])+1)/$hsp->[5])));
+    return 0 if (($x = $parms->{minNBScr}) && ($x >  $hsp->[6]/$hsp->[10]));
+    return 0 if (($x = $parms->{minCovQ})  && ($x > ((abs($hsp->[16]-$hsp->[15])+1)/$hsp->[2])));
+    return 0 if (($x = $parms->{minCovS})  && ($x > ((abs($hsp->[19]-$hsp->[18])+1)/$hsp->[5])));
     return 1;
 }
 

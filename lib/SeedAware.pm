@@ -273,6 +273,10 @@ sub temporary_directory {
     my $save_dir = $options->{save_dir} // $options->{savedir};
     # Look for a caller-supplied value.
     my $retVal = $options->{tmp_dir} // $options->{tmpdir};
+    # Set save_dir if the user didn't.
+    if (! defined $save_dir && $retVal) {
+        $save_dir = (-d $retVal ? 1 : 0);
+    }
     # Only proceed if the user didn't give us a name.
     if (! $retVal) {
         # Get the parent directory name.
@@ -281,16 +285,18 @@ sub temporary_directory {
         if ($options->{name}) {
             # Yes. Use it to form the directory name.
             $retVal = File::Spec->catfile($parent, $options->{name});
+            if (! defined $save_dir) {
+                $save_dir = (-d $retVal ? 1 : 0);
+            }
         } else {
             # No. Form a pattern from the base.
             my $pattern = ($options->{base} // 'temp_') . "XXXXXXXX";
             # Create the directory.
             $retVal = File::Temp::tempdir($pattern, DIR => $parent);
+            if (! defined $save_dir) {
+                $save_dir = 0;
+            }
         }
-    }
-    # Set save_dir if the user didn't.
-    if (! defined $save_dir) {
-        $save_dir = (! -d $retVal ? 1 : 0);
     }
     # Return the results.
     return ($retVal, $save_dir);
