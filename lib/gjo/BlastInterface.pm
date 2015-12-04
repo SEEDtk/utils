@@ -812,8 +812,10 @@ sub psiblast_in_msa
 
     my $is_array = gjoseqlib::is_array_of_sequence_triples( $align );
     my $is_glob  = $align && ref( $align ) eq 'GLOB';
+    my $is_file = $align && ! ref( $align ) && -s $align;
 
     if ( $is_array || $is_glob
+                   || $is_file
                    || $msa_master_id
                    || $max_sim
                    || $min_sim
@@ -833,7 +835,7 @@ sub psiblast_in_msa
             @align = gjoseqlib::read_fasta( $align );
             $write_file = 1;
         }
-        elsif ( $align && ! ref( $align ) && -s $align )
+        elsif ( $is_file )
         {
             @align  = gjoseqlib::read_fasta( $align );
             $alignF = $align;

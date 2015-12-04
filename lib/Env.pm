@@ -184,7 +184,7 @@ sub GetScripts {
     # Open the directory.
     opendir(my $dh, $dir) || die "Could not open directory $dir: $!";
     # Find all the script files.
-    my @files = grep { substr($_, -3, 3) eq '.pl' } readdir($dh);
+    my @files = grep { $_ =~ /\.(?:pl|sh)$/ } readdir($dh);
     close $dh;
     # Loop through the file names.
     for my $file (@files) {
@@ -195,14 +195,22 @@ sub GetScripts {
         } else {
             # We opened the file. Look for the heading comment.
             my $comment;
-            while (! eof $ih && ! $comment) {
+            if ($file =~ /\.pl$/) {
+                while (! eof $ih && ! $comment) {
+                    my $line = <$ih>;
+                    if ($line =~ /^=head1\s+(.+)/) {
+                        $comment = $1;
+                    }
+                }
+            } elsif ($file =~ /\.sh$/) {
                 my $line = <$ih>;
-                if ($line =~ /^=head1\s+(.+)/) {
-                    $comment = $1;
+                if ($line) {
+                    chomp $line;
+                    $comment = $line;
                 }
             }
             # Put the comment (or undef if there was none) in the hash.
-               $retVal{$file} = $comment;
+            $retVal{$file} = $comment;
         }
     }
     # Return the hash.
