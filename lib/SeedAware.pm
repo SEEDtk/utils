@@ -129,7 +129,7 @@ sub location_of_tmp {
 }
 
 
-=head3 tmp_file_name
+=head3 tmp_file
 
     my $fileName = SeedAware::tmp_file($base, $ext, $dir);
 
@@ -179,7 +179,7 @@ sub tmp_file {
     $dir //= $FIG_Config::temp;
     # Create the file name. Note we turn off warnings because we may not be opening the file here.
     local $^W = 0;
-    ($fh, $retVal) = File::Temp::tempfile($base . "XXXXXXXX", SUFFIX => ".$ext", OPEN => wantarray);
+    ($fh, $retVal) = File::Temp::tempfile($base . "XXXXXXXX", SUFFIX => ".$ext", OPEN => wantarray, DIR => $dir);
     # Return the file name computed and possibly the handle.
     if (wantarray) {
         return ($fh, $retVal);
