@@ -511,7 +511,7 @@ sub blast
 
     #  Okay, let's work through the user-supplied data
 
-    my %valid_tool = map { $_ => 1 } qw( blastn blastp blastx tblastn tblastx psiblast rpsblast );
+    my %valid_tool = map { $_ => 1 } qw( blastn blastp blastx tblastn tblastx psiblast rpsblast rpstblastn );
     if ( ! $valid_tool{ lc $blast_prog } )
     {
         warn "BlastInterface::blast: invalid blast program '$blast_prog'.\n";
@@ -628,11 +628,11 @@ sub alignment_to_pssm
                  -out_pssm => $pssm0F
                );
 
-    my $msa_master_idx = $opts2->{ msa_master_idx };
+    my $msa_master_idx = $opts2->{ msa_master_idx } // 0;
     push @args, -msa_master_idx    => $msa_master_idx  if $msa_master_idx > 1;
     push @args, -ignore_msa_master => ()               if $opts2->{ ignore_master };
-
-    my $rc = SeedAware::run_redirect( $prog, @args);
+    push @args, -comp_based_stats => 1;
+    my $rc = SeedAware::run_redirected( $prog, @args);
     if ( $rc != 0 )
     {
         my $cmd = join( ' ', $prog, @args );
@@ -644,8 +644,8 @@ sub alignment_to_pssm
     unlink $subjectF;
 
     #  Edit the raw PSSM file:
-
-    my $title = $opts->{ title } || ( 'untitled_' . ++$n_pssm );
+    ++$n_pssm;
+    my $title = $opts->{ title } || ( 'untitled_' . $n_pssm );
 
     my $close;
     my $pssmF = $opts->{ outPSSM } || $opts->{ out_pssm };
@@ -654,16 +654,21 @@ sub alignment_to_pssm
 
     my $skip;
     open( PSSM0, "<", $pssm0F ) or die "Could not open $pssm0F";
-    while ( <PSSM0> )
+    my $line;
+    while ($line = <PSSM0> )
     {
-        if ( /inst \{/ ) {
-            print $fh "      descr {\n";
-            print $fh "        title \"$title\"\n";
-            print $fh "      },\n";
+        if ( $line =~ /^(\s+)local id \d+(.*)/) {
+            print $fh $1 . "local id $n_pssm" . $2 . "\n";
+        } else {
+            if ( $line =~ /inst \{/ ) {
+                print $fh "      descr {\n";
+                print $fh "        title \"$title\"\n";
+                print $fh "      },\n";
+            }
+            $skip = 1 if $line =~ /intermediateData \{/;
+            $skip = 0 if $line =~ /finalData \{/;
+            print $fh $line unless $skip;
         }
-        $skip = 1 if /intermediateData \{/;
-        $skip = 0 if /finalData \{/;
-        print $fh $_ unless $skip;
     }
     close( PSSM0 );
     close $fh if $close;
@@ -864,12 +869,12 @@ sub psiblast_in_msa
             $rep_opts{ keep }    = \@keep    if @keep;
             $rep_opts{ min_sim } =  $min_sim if $min_sim;
 
-            @align = gjoalignment::representative_alignment( \@align, \%rep_opts );
+            @align = gjo::alignment::representative_alignment( \@align, \%rep_opts );
         }
         elsif ( $min_sim )
         {
             my %keep = map { $_ => 1 } @keep;
-            foreach ( gjoalignment::filter_by_similarity( \@align, $min_sim, @ref_ids ) )
+            foreach ( gjo::alignment::filter_by_similarity( \@align, $min_sim, @ref_ids ) )
             {
                 $keep{ $_->[0] } = 1;
             }
@@ -881,7 +886,7 @@ sub psiblast_in_msa
 
         if ( $pseudo_master )
         {
-            my $master = gjoalignment::consensus_sequence( \@align );
+            my $master = gjo::alignment::consensus_sequence( \@align );
             unshift @align, [ 'consensus', '', $master ];
             $write_file     = 1;
             $msa_master_id  = 'consensus';
@@ -991,9 +996,9 @@ sub build_rps_db
     #  formatrpsdb (v2.2.26) supports text subject IDs given in the title
     #  "subject_id" field.
 
-    my $prog_name = 'formatrpsdb';
+    my $prog_name = 'makeprofiledb'; # formatrpsdb';
     my $title = $opts->{ title } || 'Untitled RPS DB';
-    my @args = ( -i => $db, -t => $title );
+    my @args = ( -in => $db, -title => $title );
 
     my $prog = SeedAware::executable_for( $prog_name );
 
@@ -1003,7 +1008,7 @@ sub build_rps_db
         return '';
     }
 
-    my $rc = SeedAware::run_redirect( $prog, @args );
+    my $rc = SeedAware::run_redirected( $prog, @args );
     if ( $rc != 0 )
     {
         my $cmd = join( ' ', $prog, @args );
@@ -1397,7 +1402,10 @@ sub get_db
     my $seq_type = ( ($blast_prog eq 'blastp')
                   || ($blast_prog eq 'blastx')
                   || ($blast_prog eq 'psiblast')
-                   ) ? 'P' : 'N' ;
+                   ) ? 'P' :
+                        (($blast_prog eq 'rpsblast' ||
+                         $blast_prog eq 'rpstblastn') ?
+                         'R' : 'N');
     return $db if check_db( $db, $seq_type );
 
     #  This is not an existing database, figure out what we have been handed ...
@@ -1523,7 +1531,7 @@ sub check_db
     return '' unless ( defined( $db ) && ! ref( $db ) && $db ne '' );
 
     my $suf = ( ! $seq_type || ( $seq_type =~ m/^p/i ) ) ? 'psq' : 'nsq';
-
+    if ($seq_type =~ m/^r/i) { $suf = 'aux' }
     #         db exists        and, no source data or db is up-to-date
     return ( (-s "$db.$suf")    && ( (! -f $db) || (-M "$db.$suf"    <= -M $db) ) )
         || ( (-s "$db.00.$suf") && ( (! -f $db) || (-M "$db.00.$suf" <= -M $db) ) );
@@ -1552,7 +1560,8 @@ file path to the data, or root name for an existing database
 
 =item $seq_type
 
-begins with 'P' or 'p' for protein data, or with 'N' or 'n' for nucleotide [Default = P]
+begins with 'P' or 'p' for protein data, 'R' or 'r' for RPSBLAST data,
+or with 'N' or 'n' for nucleotide [Default = P]
 
 =item $tempD
 
@@ -1630,28 +1639,39 @@ sub verify_db
         $db = $newdb;
     }
 
-    #  Assemble the necessary data for format db
-
-    my $is_prot = ( $seq_type =~ m/^p/i ) ? 'prot' : 'nucl';
-    my @args = ( -dbtype => $is_prot,
-                 -in => $db
-               );
-
-    #  Find formatdb appropriate for the excecution environemnt.
-
-    my $prog = SeedAware::executable_for( 'makeblastdb' );
-    if ( ! $prog )
-    {
-        $prog = SeedAware::executable_for( 'formatdb' );
+    # These will be the parms to our execution request.
+    my ($prog, @args);
+    # Is this RPS or normal?
+    if ($seq_type =~ m/^r/i ) {
+        # Assembly the necessary data for makeprofiledb.
+        $prog = SeedAware::executable_for( 'makeprofiledb' );
         if (! $prog) {
-            warn "BlastInterface::verify_db: makeblastdb/formatdb program not found.\n";
+            warn "BlastInterface::verify_db: makeprofiledb program not found.\n";
             return '';
         } else {
-            @args = ( -i => $db, -p => ($is_prot eq 'prot' ? 'T' : 'F'));
+            @args = ( -in => $db );
+        }
+    } else {
+        #  Assemble the necessary data for format db
+        my $is_prot = ( $seq_type =~ m/^p/i ) ? 'prot' : 'nucl';
+        @args = ( -dbtype => $is_prot,
+                     -in => $db
+                   );
+        #  Find formatdb appropriate for the excecution environemnt.
+        $prog = SeedAware::executable_for( 'makeblastdb' );
+        if ( ! $prog )
+        {
+            $prog = SeedAware::executable_for( 'formatdb' );
+            if (! $prog) {
+                warn "BlastInterface::verify_db: makeblastdb/formatdb program not found.\n";
+                return '';
+            } else {
+                @args = ( -i => $db, -p => ($is_prot eq 'prot' ? 'T' : 'F'));
+            }
         }
     }
 
-    #  Run makeblastdb, redirecting the annoying messages about unusual residues.
+    #  Run database maker, redirecting the annoying messages about unusual residues.
 
     my $rc = SeedAware::run_redirected( $prog, @args );
     if ( $rc != 0 )
@@ -1827,7 +1847,7 @@ sub form_blast_command
     my( $queryF, $dbF, $blast_prog, $parms ) = @_;
     $parms ||= {};
 
-    my %prog_ok = map { $_ => 1 } qw( blastn blastp blastx tblastn tblastx psiblast rpsblast);
+    my %prog_ok = map { $_ => 1 } qw( blastn blastp blastx tblastn tblastx psiblast rpsblast rpstblastn);
     $queryF && $dbF && $blast_prog && $prog_ok{ $blast_prog }
         or return wantarray ? () : [];
 
