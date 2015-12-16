@@ -712,8 +712,10 @@ sub WriteAllConfigs {
     # Add the environment variable that tells us what our environment is.
     if ($winMode) {
         print $oh "SET STK_TYPE=Windows\n";
+        print $oh "SET SERVICE=SEEDtk\n";
     } else {
         print $oh "export STK_TYPE=Mac\n";
+        print $oh "export SERVICE=SEEDtk\n";
     }
     # If the user wants a data directory switch, put it here.
     if ($FIG_Config::data_switch) {
