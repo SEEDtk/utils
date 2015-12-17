@@ -15,15 +15,15 @@
 # http://www.theseed.org/LICENSE.TXT.
 #
 
-package gjo::BlastInterface;
+package BlastInterface;
 
 use Carp;
 use Data::Dumper;
 
 use strict;
-use gjo::alignment;
+use alignment;
 use gjoseqlib;
-use gjo::BlastParse;
+use BlastParse;
 use SeedAware;
 use File::Copy::Recursive;
 
@@ -869,12 +869,12 @@ sub psiblast_in_msa
             $rep_opts{ keep }    = \@keep    if @keep;
             $rep_opts{ min_sim } =  $min_sim if $min_sim;
 
-            @align = gjo::alignment::representative_alignment( \@align, \%rep_opts );
+            @align = alignment::representative_alignment( \@align, \%rep_opts );
         }
         elsif ( $min_sim )
         {
             my %keep = map { $_ => 1 } @keep;
-            foreach ( gjo::alignment::filter_by_similarity( \@align, $min_sim, @ref_ids ) )
+            foreach ( alignment::filter_by_similarity( \@align, $min_sim, @ref_ids ) )
             {
                 $keep{ $_->[0] } = 1;
             }
@@ -886,7 +886,7 @@ sub psiblast_in_msa
 
         if ( $pseudo_master )
         {
-            my $master = gjo::alignment::consensus_sequence( \@align );
+            my $master = alignment::consensus_sequence( \@align );
             unshift @align, [ 'consensus', '', $master ];
             $write_file     = 1;
             $msa_master_id  = 'consensus';
@@ -1765,7 +1765,7 @@ sub run_blast
     # my $blastall = $cmd->[0] =~ /blastall$/;
     my @input = split /\n/, $fh;
     my @output;
-    my $parser = gjo::BlastParse->new(\@input, self => $includeSelf );
+    my $parser = BlastParse->new(\@input, self => $includeSelf );
     while ( my $hsp = $parser->next_hsp )
     {
         if ( &keep_hsp( $hsp, $parms ) )

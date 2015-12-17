@@ -1,4 +1,4 @@
-package gjo::stat;
+package stat;
 
 # This is a SAS component.
 

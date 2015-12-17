@@ -16,7 +16,7 @@
 #
 
 
-package gjo::BlastParse;
+package BlastParse;
 
     use strict;
     use warnings;
@@ -33,7 +33,7 @@ information, which is more reliable. It does not yet have the full powers of its
 
 The basic usage strategy is
 
-    my $parser = gjo::BlastParse->new($input, %options);
+    my $parser = BlastParse->new($input, %options);
     while (my $hsp = $parser->next_hsp) {
         ... process ...
     }
@@ -45,7 +45,7 @@ An hsp is a tuple of the following form
 
 Alternatively, you can use
 
-    my $parser = gjo::BlastParse->new($input, %options);
+    my $parser = BlastParse->new($input, %options);
     while (my $rec = $parser->next_record) {
         ... process ...
     }
@@ -63,11 +63,11 @@ where a record is one of the following
 
 You can also ask for all the records in the form of a list.
 
-    my @hsps = gjo::BlastParse::all_hsps($input, %options);
+    my @hsps = BlastParse::all_hsps($input, %options);
 
 or
 
-    my @records = gjo::BlastParse::all_records($input, %options);
+    my @records = BlastParse::all_records($input, %options);
 
 
 This object contains the following fields.
@@ -105,7 +105,7 @@ Input line to process.
 
 =head3 new
 
-    my $varname = gjo::BlastParse->new($input, %options);
+    my $varname = BlastParse->new($input, %options);
 
 Create a new Blast Parser for a particular input stream.
 
@@ -175,7 +175,7 @@ sub new {
 
 =head3 all_hsps
 
-    my @hsps = gjo::BlastParse::all_hsps($input, %options);
+    my @hsps = BlastParse::all_hsps($input, %options);
 
 Return the blast output in hsp format.
 
@@ -214,7 +214,7 @@ alignment sequence, (18) the subject start position, (19) the subject end positi
 
 sub all_hsps {
     my ($input, %options) = @_;
-    my $helper = gjo::BlastParse->new($input, %options);
+    my $helper = BlastParse->new($input, %options);
     my @retVal;
     while (my $hsp = $helper->next_hsp) {
         push @retVal, $hsp;
@@ -224,7 +224,7 @@ sub all_hsps {
 
 =head3 all_records
 
-    my @records = gjo::BlastParse::all_records($input, %options);
+    my @records = BlastParse::all_records($input, %options);
 
 Return the blast output as structured records. Each record is either q query, a subject, or an hsp.
 
@@ -280,7 +280,7 @@ start position, (11) the query end position, (12) the query alignment sequence,
 
 sub all_records {
     my ($input, %options) = @_;
-    my $helper = gjo::BlastParse->new($input, %options);
+    my $helper = BlastParse->new($input, %options);
     my @retVal;
     while (my $rec = $helper->next_record) {
         push @retVal, $rec;
@@ -607,7 +607,7 @@ sub _next_hsp_line {
 
 =head3 seqdir
 
-    my $dir = gjo::BlastParse::seqdir($i1, $i2);
+    my $dir = BlastParse::seqdir($i1, $i2);
 
 Return 1 if the first number is at or to the left of the second, else -1.
 

@@ -16,7 +16,7 @@
 # http://www.theseed.org/LICENSE.TXT.
 #
 
-package gjo::alignment;
+package alignment;
 
 =pod
 
