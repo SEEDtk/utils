@@ -451,7 +451,7 @@ Go into your workspace directory and create a new folder called C<Data>.
 
 From the Eclipse menu, select I<Run, Run Configurations> to get the B<Create, manage, and run configurations>
 dialog. Click I<Perl Local> to highlight it and click the B<New> tool to create a new launch configuration.
-You should be on the I<Main> tab. Type C<kernel> in the I<Project> box and C<scripts/Config.pl> in the
+You should be on the I<Main> tab. Type C<utils> in the I<Project> box and C<scripts/Config.pl> in the
 I<File to execute> box. Change the configuration name to C<Initial Configuration> so you know this is
 the first-time Config call. If you've done something wrong, you'll get a little error message at the
 top of the dialog and the I<Run> button will dim.
