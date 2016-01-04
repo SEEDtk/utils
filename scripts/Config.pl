@@ -89,6 +89,23 @@ project (that is, the name of the I<project directory project>).
 If this is specified, then it is presumed you have GitHub for Windows installed. Its copy of
 GIT will be added to your path in the C<user-env> script.
 
+=item dbhost
+
+Name of the database host on which the database will be placed. The default is C<localhost>.
+
+=item dbname
+
+Name to give to the shrub database. The default is an empty string, meaning the default name will
+be used.
+
+=item dbuser
+
+User name for signing on to the database. The default is C<seed>.
+
+=item dbpass
+
+Password for signing on to the database. The default is an empty string, meaning no password.
+
 =back
 
 =head2 Notes for Programmers
@@ -137,9 +154,13 @@ my ($opt, $usage) = describe_options('%o %c dataRootDirectory webRootDirectory',
                 { default => "FIG_Config.pm" }],
         ["dirs", "verify default subdirectories exist"],
         ["dna=s", "location of the DNA repository (if other than local)"],
+        ["dbhost=s", "name of the database host to which we should connect", { default => 'localhost' }],
         ["links", "generate Links.html file"],
         ["gfw", "add GitHub for Windows GIT to the path (Windows only)"],
         ["gitbash", "configure for gitbash use"],
+        ["dbname=s", "Shrub database name"],
+        ["dbuser=s", "Shrub database user", { default => 'seed' }],
+        ["dbpass=s", "Shrub database password"],
         ["eclipse=s", "if specified, then we will set up for Eclipse; the value must be the base name of the project directory project"]
         );
 print "Analyzing directories.\n";
@@ -485,19 +506,21 @@ sub WriteAllParams {
             "our \@tools = (" . join(", ", map { "'$projDir/packages/$_/bin'" } @toolDirs) .
                     ");");
     # Now comes the Shrub configuration section.
+    my $userdata = $opt->dbuser . "/" . ($opt->dbpass // '');
+    my $dbname = $opt->dbname // '';
     Env::WriteLines($oh, "", "", "# SHRUB CONFIGURATION", "");
     Env::WriteParam($oh, 'root directory for Shrub data files (should have subdirectories "Inputs" (optional) and "LoadFiles" (required))',
             data => "$dataRootDir");
     Env::WriteParam($oh, 'full name of the Shrub DBD XML file', shrub_dbd => "$modules->{ERDB}/ShrubDBD.xml");
-    Env::WriteParam($oh, 'Shrub database signon info (name/password)', userData => "seed/");
-    Env::WriteParam($oh, 'name of the Shrub database (empty string to use the default)', shrubDB => "");
+    Env::WriteParam($oh, 'Shrub database signon info (name/password)', userData => $userdata);
+    Env::WriteParam($oh, 'name of the Shrub database (empty string to use the default)', shrubDB => $dbname);
     Env::WriteParam($oh, 'TRUE if we should create indexes before a table load (generally TRUE for MySQL, FALSE for PostGres)',
             preIndex => 1);
     Env::WriteParam($oh, 'default DBMS (currently only "mysql" works for sure)', dbms => "mysql");
     Env::WriteParam($oh, 'database access port', dbport => 3306);
     Env::WriteParam($oh, 'TRUE if we are using an old version of MySQL (legacy parameter; may go away)', mysql_v3 => 0);
     Env::WriteParam($oh, 'default MySQL storage engine', default_mysql_engine => "InnoDB");
-    Env::WriteParam($oh, 'database host server (empty string to use the default)', dbhost => "");
+    Env::WriteParam($oh, 'database host server (empty string to use the default)', dbhost => $opt->dbhost);
     Env::WriteParam($oh, 'TRUE to turn off size estimates during table creation-- should be FALSE for MyISAM',
             disable_dbkernel_size_estimates => 1);
     Env::WriteParam($oh, 'mode for LOAD TABLE INFILE statements, empty string is OK except in special cases (legacy parameter; may go away)',
