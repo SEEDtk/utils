@@ -223,7 +223,7 @@ if (! defined $FIG_Config::data) {
 if (! defined $FIG_Config::web_dir) {
     $webRootDir = FixPath($ARGV[1]);
     if (! defined $webRootDir) {
-        die "A web root directory is required if no current value exists in FIG_Config.";
+        $webRootDir = '';
     } elsif (! -d $webRootDir) {
         die "The specified web root directory $webRootDir was not found.";
     }
@@ -264,7 +264,9 @@ if ($opt->dirs) {
         BuildPaths($winMode, Data => $FIG_Config::data, qw(DnaRepo));
     }
     # Insure we have the web paths.
-    BuildPaths($winMode, Web => $FIG_Config::web_dir, qw(img Tmp logs));
+    if ($webRootDir) {
+        BuildPaths($winMode, Web => $FIG_Config::web_dir, qw(img Tmp logs));
+    }
 }
 # Insure we have the global directory path.
 if (! -d $FIG_Config::global) {
@@ -273,31 +275,36 @@ if (! -d $FIG_Config::global) {
 }
 BuildPaths($winMode, Data => $FIG_Config::data, qw(Global));
 # Do we have a Web project?
-my $weblib = "$FIG_Config::web_dir/lib";
-if (-d $weblib) {
-    # Yes. Create the web configuration file.
-    my $webConfig = "$weblib/Web_Config.pm";
-    # Open the web configuration file for output.
-    if (! open(my $oh, ">$webConfig")) {
-        # Web system problems are considered warnings, not fatal errors.
-        warn "Could not open web configuration file $webConfig: $!\n";
-    } else {
-        # Write the file.
-        print $oh "\n";
-        print $oh "use lib\n";
-        print $oh "    '" .	join("',\n    '", @FIG_Config::libs) . "';\n";
-        print $oh "\n";
-        print $oh "use FIG_Config;\n";
-        print $oh "\n";
-        print $oh "1;\n";
-        # Close the file.
-        close $oh;
-        print "Web configuration file $webConfig created.\n";
+if ($webRootDir) {
+    my $weblib = "$FIG_Config::web_dir/lib";
+    if (-d $weblib) {
+        # Yes. Create the web configuration file.
+        my $webConfig = "$weblib/Web_Config.pm";
+        # Open the web configuration file for output.
+        if (! open(my $oh, ">$webConfig")) {
+            # Web system problems are considered warnings, not fatal errors.
+            warn "Could not open web configuration file $webConfig: $!\n";
+        } else {
+            # Write the file.
+            print $oh "\n";
+            print $oh "use lib\n";
+            print $oh "    '" .     join("',\n    '", @FIG_Config::libs) . "';\n";
+            print $oh "\n";
+            print $oh "use FIG_Config;\n";
+            print $oh "\n";
+            print $oh "1;\n";
+            # Close the file.
+            close $oh;
+            print "Web configuration file $webConfig created.\n";
+        }
     }
 }
 # If this is Eclipse mode, we need to set up the PERL libraries and
 # execution paths.
 if ($eclipseMode) {
+    if (! $webRootDir) {
+        die "Web support is required in Eclipse mode.";
+    }
     # Set up the paths and PERL libraries.
     WriteAllConfigs($winMode, \%modules, $projDir, $opt, \%oldenv);
     if (! $winMode) {
@@ -346,6 +353,9 @@ if (! $winMode) {
 print "Pull-all script written to $fileName.\n";
 # Finally, check for the links file.
 if ($opt->links) {
+    if (! $webRootDir) {
+        die "Web support is required if --links is specified.";
+    }
     # Determine the output location for the links file.
     my $linksDest = "$FIG_Config::web_dir/Links.html";
     # Do we need to generate a links file?
@@ -471,8 +481,10 @@ sub WriteAllParams {
         "");
     # Write each parameter.
     Env::WriteParam($oh, 'root directory of the local web server', web_dir => $webRootDir);
-    Env::WriteParam($oh, 'directory for temporary files', temp => "$webRootDir/Tmp");
-    Env::WriteParam($oh, 'URL for the directory of temporary files', temp_url => 'http://fig.localhost/Tmp');
+    if ($webRootDir) {
+        Env::WriteParam($oh, 'directory for temporary files', temp => "$webRootDir/Tmp");
+        Env::WriteParam($oh, 'URL for the directory of temporary files', temp_url => 'http://fig.localhost/Tmp');
+    }
     Env::WriteParam($oh, 'TRUE for windows mode', win_mode => ($winMode ? 1 : 0));
     Env::WriteParam($oh, 'source code project directory', proj => $projDir);
     Env::WriteParam($oh, 'location of shared code', cvsroot => '');

@@ -87,10 +87,16 @@ no other modules to run.
 This module contains code that does not relate to the database and requires only
 modules in C<RASTtk> to run.
 
+=item tbltools
+
+This module contains command-line scripts and support libraries for manipulating tab-delimited
+files.
+
 =back
 
 When you add a module, you need to include it in the B<@modules> member of L<FIG_Config>
-in order to get it to work in Eclipse. In Unix, you need to rerun the C<bootstrap> script.
+in order to get it to work in Eclipse. In Unix, you need to add the module name to the
+modules list in C<seedtk-setup> and rerun the C<bootstrap> script.
 
 =head2 The Data Directory
 
