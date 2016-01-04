@@ -221,11 +221,13 @@ if (! defined $FIG_Config::data) {
 # Make sure we have the web directory if there is no web root in
 # the command-line parameters.
 if (! defined $FIG_Config::web_dir) {
-    $webRootDir = FixPath($ARGV[1]);
-    if (! defined $webRootDir) {
+    if (! $ARGV[1]) {
         $webRootDir = '';
-    } elsif (! -d $webRootDir) {
-        die "The specified web root directory $webRootDir was not found.";
+    } else {
+        $webRootDir = FixPath($ARGV[1]);
+        if (! -d $webRootDir) {
+            die "The specified web root directory $webRootDir was not found.";
+        }
     }
 } else {
     $webRootDir = $FIG_Config::web_dir;
