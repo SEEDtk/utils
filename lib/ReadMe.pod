@@ -281,7 +281,7 @@ Now type
 which will download the rest of the core projects from GITHUB and bootstrap the environment.
 You will be prompted for a password on each one
 
-Next you need to create the data and web directories.
+Next you need to create the data directory.
 
     mkdir Data
 
@@ -289,12 +289,19 @@ Activate the environment by typing
 
     source user-env.sh
 
-We are now ready to bootstrap the system using the L<Config.pl> script. Type
+We are now ready to bootstrap the system using the L<Config.pl> script.
+If you are using the master Argonne SEEDtk database, type
 
-    Config --dirs --dna=/homes/parrello/DnaRepo Data /homes/self/public_html/SEEDtk
+    Config --dirs --dbhost=seed-db-write.mcs.anl.gov --dna=/homes/parrello/DnaRepo Data
 
-Here C<Data> should be your data directory, and C</homes/self/public_html/SEEDtk> your web
-directory.
+If you are using your own homegrown database, then you must specify the location of the database
+and the login name and password. Type
+
+    Config --dirs --dbhost=hostname --dbuser=username --dbpass=password Data
+
+where I<hostname> is the MySQL host for the database, I<username> is the signon user name, and
+I<password> is the signon password. The database should be named C<seedtk_shrub>. If not, specify
+the name using the C<--dbname> parameter.
 
 Now exit from bash. From this point on, to get yourself into a SEEDtk environment, you simply type
 
