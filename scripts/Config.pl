@@ -546,7 +546,7 @@ sub WriteAllParams {
     my $dbname = $opt->dbname // '';
     Env::WriteLines($oh, "", "", "# SHRUB CONFIGURATION", "");
     Env::WriteParam($oh, 'root directory for Shrub data files (should have subdirectories "Inputs" (optional) and "LoadFiles" (required))',
-            data => "$dataRootDir");
+            data => $dataRootDir, $kbase);
     Env::WriteParam($oh, 'full name of the Shrub DBD XML file', shrub_dbd => "$modules->{ERDB}/ShrubDBD.xml", $kbase);
     Env::WriteParam($oh, 'Shrub database signon info (name/password)', userData => $userdata);
     Env::WriteParam($oh, 'name of the Shrub database (empty string to use the default)', shrubDB => $dbname);
