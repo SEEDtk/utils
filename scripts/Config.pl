@@ -577,7 +577,9 @@ sub WriteAllParams {
         GeneratePathFix($oh, $winMode, scripts => 'PATH', @paths);
         # Do the same with PERL5LIB.
         GeneratePathFix($oh, $winMode, libraries => 'PERL5LIB', @libs, "$FIG_Config::proj/config");
-        if (! $winMode && ! $kbase) {
+    }
+    if ($opt->eclipse) {
+        if (! $winMode) {
             # On the Mac, we need to fix the MySQL library path.
             opendir(my $dh, "/usr/local") || die "Could not perform MySQL directory search.";
             my ($libdir) = grep { ($_ =~ /^mysql-\d+/) && (-f "/usr/local/$_/libmysqlclient.18.dylib") } readdir $dh;
@@ -594,6 +596,10 @@ sub WriteAllParams {
                     "    \$ENV{PATHEXT} .= ';.pl';",
                     "}");
         }
+    }
+    if ($kbase) {
+        # For a KBase project, we need to add the include libraries to @INC.
+        Env::WriteLines($oh, "", "# Add include paths.", "push \@INC, '" . join("', '", @libs) . "';");
     }
     # Write the trailer.
     print $oh "\n1;\n";
