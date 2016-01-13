@@ -311,7 +311,7 @@ sub WriteLines {
 
 =head3 WriteParam
 
-    Env::WriteParam($oh, $comment, $varName => $defaultValue);
+    Env::WriteParam($oh, $comment, $varName => $defaultValue, $force);
 
 Write a parameter value to the B<FIG_Config>. If the parameter already
 has a value, that will be written. Otherwise, the default value will be
@@ -335,6 +335,10 @@ Name of the variable to assign.
 
 Value to assign to the variable if it does not already have one.
 
+=item force
+
+If TRUE, the default value will be used even if a value already exists.
+
 =back
 
 =cut
@@ -347,11 +351,14 @@ Value to assign to the variable if it does not already have one.
 
 sub WriteParam {
     # Get the parameters.
-    my ($oh, $comment, $varName, $defaultValue) = @_;
+    my ($oh, $comment, $varName, $defaultValue, $force) = @_;
     # We will put the desired variable value in here.
-    my $value = eval("\$FIG_Config::$varName");
-    if ($@) {
-        die "Error checking value of FIG_Config::$varName";
+    my $value;
+    if (! $force) {
+        $value = eval("\$FIG_Config::$varName");
+        if ($@) {
+            die "Error checking value of FIG_Config::$varName";
+        }
     }
     if (! defined $value) {
         # There is no existing value, so use the default.

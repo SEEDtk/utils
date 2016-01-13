@@ -77,7 +77,8 @@ If specified, the default data and web subdirectories will be set up.
 =item dna
 
 If specified, the location for the DNA repository. If you are using a shared database, then
-this insures you are using the same repository as everyone else.
+this insures you are using the same repository as everyone else. If C<none>, then the DNA
+repository is turned off and DNA requests will fail.
 
 =item eclipse
 
@@ -105,6 +106,10 @@ User name for signing on to the database. The default is C<seed>.
 =item dbpass
 
 Password for signing on to the database. The default is an empty string, meaning no password.
+
+=item kbase
+
+Name of a directory in which to create a shadow FIG_Config for the kbase environment.
 
 =back
 
@@ -161,6 +166,7 @@ my ($opt, $usage) = describe_options('%o %c dataRootDirectory webRootDirectory',
         ["dbname=s", "Shrub database name"],
         ["dbuser=s", "Shrub database user", { default => 'seed' }],
         ["dbpass=s", "Shrub database password"],
+        ["kbase=s", "kbase lib directory"],
         ["eclipse=s", "if specified, then we will set up for Eclipse; the value must be the base name of the project directory project"]
         );
 print "Analyzing directories.\n";
@@ -255,6 +261,18 @@ if ($opt->fc eq 'off') {
     # Execute it to get the latest variable values.
     print "Reading back new configuration.\n";
     RunFigConfig($outputName);
+    # Check for a KBase shadow.
+    if ($opt->kbase) {
+        my $kbFigConfig = $opt->kbase;
+        # Create a module directory map.
+        my $kbModBase = "kb/module/SEEDtk/modules";
+        my %kbModules;
+        for my $module (@FIG_Config::modules) {
+            $kbModules{$module} = "$kbModBase/$module";
+        }
+        WriteAllParams($kbFigConfig, $kbModBase, \%kbModules, '/kb/module/SEEDtk', '/kb/module/SEEDtk/Data',
+                '', 0, $opt, 1);
+    }
 }
 # Are we setting up default data directories?
 if ($opt->dirs) {
@@ -422,7 +440,7 @@ sub RunFigConfig {
 =head3 WriteAllParams
 
     WriteAllParams($fig_config_name, $modBaseDir, \%modules, $projDir,
-                   $dataRootDir, $webRootDir, $winMode, $opt);
+                   $dataRootDir, $webRootDir, $winMode, $opt, $force);
 
 Write out the B<FIG_Config> file to the specified location. This method
 is mostly calls to the L</WriteParam> method, which provides a concise
@@ -465,13 +483,17 @@ TRUE for Windows, FALSE for Unix/Mac.
 
 Command-line options object.
 
+=item kbase
+
+If TRUE, the file will be modified for KBase use.
+
 =back
 
 =cut
 
 sub WriteAllParams {
     # Get the parameters.
-    my ($fig_config_name, $modBaseDir, $modules, $projDir, $dataRootDir, $webRootDir, $winMode, $opt) = @_;
+    my ($fig_config_name, $modBaseDir, $modules, $projDir, $dataRootDir, $webRootDir, $winMode, $opt, $kbase) = @_;
     # Open the FIG_Config for output.
     open(my $oh, ">$fig_config_name") || die "Could not open $fig_config_name: $!";
     # Write the initial lines.
@@ -482,16 +504,16 @@ sub WriteAllParams {
         "## All paths should be absolute, not relative.",
         "");
     # Write each parameter.
-    Env::WriteParam($oh, 'root directory of the local web server', web_dir => $webRootDir);
+    Env::WriteParam($oh, 'root directory of the local web server', web_dir => $webRootDir, $kbase);
     if ($webRootDir) {
-        Env::WriteParam($oh, 'directory for temporary files', temp => "$webRootDir/Tmp");
+        Env::WriteParam($oh, 'directory for temporary files', temp => "$webRootDir/Tmp", $kbase);
         Env::WriteParam($oh, 'URL for the directory of temporary files', temp_url => 'http://fig.localhost/Tmp');
     }
     Env::WriteParam($oh, 'TRUE for windows mode', win_mode => ($winMode ? 1 : 0));
-    Env::WriteParam($oh, 'source code project directory', proj => $projDir);
+    Env::WriteParam($oh, 'source code project directory', proj => $projDir, $kbase);
     Env::WriteParam($oh, 'location of shared code', cvsroot => '');
     Env::WriteParam($oh, 'TRUE to switch to the data directory during setup', data_switch => 0);
-    Env::WriteParam($oh, 'location of global file directory', global => "$dataRootDir/Global");
+    Env::WriteParam($oh, 'location of global file directory', global => "$dataRootDir/Global", $kbase);
     Env::WriteParam($oh, 'default conserved domain search URL', ConservedDomainSearchURL => "http://maple.mcs.anl.gov:5600");
 
     ## Put new non-Shrub parameters here.
@@ -525,7 +547,7 @@ sub WriteAllParams {
     Env::WriteLines($oh, "", "", "# SHRUB CONFIGURATION", "");
     Env::WriteParam($oh, 'root directory for Shrub data files (should have subdirectories "Inputs" (optional) and "LoadFiles" (required))',
             data => "$dataRootDir");
-    Env::WriteParam($oh, 'full name of the Shrub DBD XML file', shrub_dbd => "$modules->{ERDB}/ShrubDBD.xml");
+    Env::WriteParam($oh, 'full name of the Shrub DBD XML file', shrub_dbd => "$modules->{ERDB}/ShrubDBD.xml", $kbase);
     Env::WriteParam($oh, 'Shrub database signon info (name/password)', userData => $userdata);
     Env::WriteParam($oh, 'name of the Shrub database (empty string to use the default)', shrubDB => $dbname);
     Env::WriteParam($oh, 'TRUE if we should create indexes before a table load (generally TRUE for MySQL, FALSE for PostGres)',
@@ -544,16 +566,18 @@ sub WriteAllParams {
     if (! $dnaRepo) {
         # Here we have the local repository.
         $dnaRepo = "$dataRootDir/DnaRepo";
+    } elsif ($dnaRepo eq 'none') {
+        $dnaRepo = '';
     }
-    Env::WriteParam($oh, 'location of the DNA repository', shrub_dna => $dnaRepo);
+    Env::WriteParam($oh, 'location of the DNA repository', shrub_dna => $dnaRepo, $kbase);
     ## Put new Shrub parameters here.
-    if ($opt->eclipse) {
-        # For an Eclipse project, we need to convince FIG_Config to modify the path and the libpath.
+    if ($opt->eclipse || $kbase) {
+        # For an Eclipse project or KBase, we need to convince FIG_Config to modify the path and the libpath.
         my @paths = ($winMode ? (@scripts) : "$FIG_Config::proj/bin");
         GeneratePathFix($oh, $winMode, scripts => 'PATH', @paths);
         # Do the same with PERL5LIB.
         GeneratePathFix($oh, $winMode, libraries => 'PERL5LIB', @libs, "$FIG_Config::proj/config");
-        if (! $winMode) {
+        if (! $winMode && ! $kbase) {
             # On the Mac, we need to fix the MySQL library path.
             opendir(my $dh, "/usr/local") || die "Could not perform MySQL directory search.";
             my ($libdir) = grep { ($_ =~ /^mysql-\d+/) && (-f "/usr/local/$_/libmysqlclient.18.dylib") } readdir $dh;
@@ -563,7 +587,7 @@ sub WriteAllParams {
                 print "\n**** NOTE: IF DBD::MySQL fails, you will need to run\n\n";
                 print "sudo ln -s /usr/local/$libdir/lib/libmysqlclient.18.dylib /usr/local/lib/libmysqlclient.18.dylib\n\n";
             }
-        } else {
+        } elsif ($winMode) {
             # On Windows, we need to upgrade that PATHEXT.
             Env::WriteLines($oh, "", "# Insure PERL is executable.",
                     "unless (\$ENV{PATHEXT} =~ /\.pl/i) {",
@@ -571,7 +595,6 @@ sub WriteAllParams {
                     "}");
         }
     }
-
     # Write the trailer.
     print $oh "\n1;\n";
     # Close the output file.
