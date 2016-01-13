@@ -265,7 +265,7 @@ if ($opt->fc eq 'off') {
     if ($opt->kbase) {
         my $kbFigConfig = $opt->kbase;
         # Create a module directory map.
-        my $kbModBase = "kb/module/SEEDtk/modules";
+        my $kbModBase = "/kb/module/SEEDtk/modules";
         my %kbModules;
         for my $module (@FIG_Config::modules) {
             $kbModules{$module} = "$kbModBase/$module";
