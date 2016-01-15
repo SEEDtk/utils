@@ -279,7 +279,7 @@ if ($opt->dirs) {
     # Yes. Insure we have the data paths.
     BuildPaths($winMode, Data => $FIG_Config::data, qw(Inputs Inputs/GenomeData Inputs/SubSystemData LoadFiles));
     # Are we using a local DNA repository?
-    if (! $opt->dna) {
+    if ($opt->dna ne 'none') {
         # Yes. Build that, too.
         BuildPaths($winMode, Data => $FIG_Config::data, qw(DnaRepo));
     }
