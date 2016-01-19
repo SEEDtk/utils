@@ -599,7 +599,7 @@ sub WriteAllParams {
     }
     if ($kbase) {
         # For a KBase project, we need to add the include libraries to @INC.
-        Env::WriteLines($oh, "", "# Add include paths.", "unshift \@INC, '" . join("', '", @libs) . "';");
+        Env::WriteLines($oh, "", "# Add include paths.", "push \@INC, '" . join("', '", @libs) . "';");
     }
     # Write the trailer.
     print $oh "\n1;\n";
