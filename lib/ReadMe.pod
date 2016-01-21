@@ -109,8 +109,10 @@ The default data directory structure includes four main folders.
 The default holding place for data to be loaded into the database. Genome
 directories are stored in C<Inputs/GenomeData> and subsystem directories in
 C<Inputs/SubSystemData>. The formats of these directories are discussed
-in L<ExchangeFormat>. This directory can be overridden on the command line
-for most scripts (see L<Shrub/new_for_script>).
+in L<ExchangeFormat>. There is also an C<Inputs/ModelSEEDDatabase> directory
+that contains biochemistry information downloaded from GitHub, and an
+C<Inputs/Other> directory for other load files. This directory can be overridden
+on the command line for most scripts (see L<Shrub/new_for_script>).
 
 =item LoadFiles
 
