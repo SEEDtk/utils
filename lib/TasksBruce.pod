@@ -4,8 +4,5 @@ This file contains Bruce's current to-do list.
 
 =cut
 
-    ## TODO add a method for queries based on secondary fields
-    ## TODO document GenomeTypeObject
-    ## TODO research installing DIAMOND http://ab.inf.uni-tuebingen.de/data/software/diamond/download/public/manual.pdf
     ## TODO in solid_projection, do not project to euks
 

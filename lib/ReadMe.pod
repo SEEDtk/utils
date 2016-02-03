@@ -70,27 +70,31 @@ The project is divided into multiple source modules. The core modules are as fol
 =item ERDB
 
 This module contains the code for implementing the database layer and scripts for
-loading and maintaining the database.
+loading and maintaining the database. It is generally only used internally
+for SEEDtk development.
 
 =item kernel
 
 This module contains code relating to bioinformatics and scripts for querying and
-updating the database.
+updating the database. There are no restrictions on code in this module.
 
 =item RASTtk
 
-This module contains code that is intended to be shared to other projects. It requires
-no other modules to run.
-
-=item utils
-
-This module contains code that does not relate to the database and requires only
-modules in C<RASTtk> to run.
+This module contains code that is intended to be shared to other projects. Code in this
+module cannot access the Shrub database or the SEEDtk file system.
 
 =item tbltools
 
 This module contains command-line scripts and support libraries for manipulating tab-delimited
-files.
+files. In general, this module should only be used for B<svc> scripts. These scripts are intended
+to be shared to other projects, but they require database access. Code in this module that
+accesses the database or the SEEDtk file system should be restricted to the L<STKServices>
+library. This library will be replaced when the code is ported.
+
+=item utils
+
+This module contains code for maintaining the project. It is generally only used
+internally for SEEDtk development.
 
 =back
 
@@ -339,7 +343,7 @@ other members of the project.
 
 Saving your work locally is called I<committing>. Sharing your work on GITHUB is called I<pushing>.
 Getting updates from the shared project is called I<pulling>. Note that because of the large number
-of projects, it takes several pull operations to synchronize the whole project. The L<seedtk_pull.pl>
+of projects, it takes several pull operations to synchronize the whole project. The L</pull-all>
 script can be used to pull all the projects at once.
 
 Before you do anything, your local repository should be in a committed state. To check the state of
