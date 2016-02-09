@@ -4,18 +4,51 @@ This file contains important notes about the SEEDtk programming environment.
 
 =head1 Directory Configuration
 
-The SEEDtk system is designed for development in two distinct environments-- as
-an Eclipse workspace on a single-user PC, and as a directory tree on a Unix
-server.
+The SEEDtk system has been designed to work in multiple environments and can be
+configured in two distinct ways. The most common configuration has a home directory
+with a code subtree and a data subtree. Underneath the code subtree are the
+various code I<modules>. Each module has a B<lib> subdirectory containing PERL libraries
+and a B<scripts> subdirectory containing scripts.
 
-The project is divided into multiple I<modules>. Each module has a B<lib>
-subdirectory containing PERL modules and a B<script> subdirectory containing
-PERL scripts.
+    home
+        Data
+        GIT
+            ERDBtk
+            SEEDtk
+            RASTtk
+            tbltools
+            utils
+            Web
 
-In addition to the modules, there is the I<project directory> containing utilities
-and files related to setup and configuration, the I<web directory> containing a
-web site used to assist in development, and the I<data directory> containing
-default locations for data used in loading the database.
+In this version, the code directory is called C<GIT>, which is a common convention,
+but by no means a requirement. In the above configuration, the C<SEEDtk> directory
+is special, because it contains files and utilities related to configuration, and
+does not have the standard B<lib> and B<scripts> arrangement. This directory is called
+the I<project directory>.
+
+For compatibility with certain external systems, we support an alternate configuration
+in which the project directory is the root and the code directories are stored under
+a directory called B<modules>.
+
+    SEEDtk
+        Data
+        modules
+            ERDBtk
+            RASTtk
+            tbltools
+            utils
+
+In this version there is no B<Web> project. The B<Web> project contains a website you can
+configure on your local host that contains useful documentation and tutorials. This is
+generally not possible in the types of environments where the alternate configuration is
+required. The B<Web> project contains a subdirectory called B<Web> that we refer to as
+the I<web directory>.
+
+The first configuration is called B<vanilla mode> and the second is called B<alternate mode>.
+
+Most of the early SEEDtk development was done using the Eclipse editor. In the instructions
+below, there is a section for people who also want to use Eclipse and integrate the SEEDtk
+code and source control directly into the Eclipse infrastructure.
 
 =head2 The Project Directory
 
@@ -31,10 +64,6 @@ project directory contains the following subdirectories.
 
 Configuration files. This includes the L<FIG_Config> file.
 
-=item doc
-
-Documentation directory.
-
 =item template
 
 Templates used by the setup and configuration tools.
@@ -46,7 +75,9 @@ Unix scripts for facilitating configuration and maintenance.
 =back
 
 There are also several files in the project directory root that
-are used in deployment and setup.
+are used in deployment and setup and several subdirectories that are only
+relevant to the external environments for which the so-called Unix mode was
+designed.
 
 =head3 FIG_Config
 
@@ -59,6 +90,13 @@ you must run L<Config.pl> to update your environment. The B<@modules> variable
 contains a list of the modules installed on your system. This is used to configure
 your path and your list of PERL include libraries. L<Config.pl> will insure the
 core modules required to run the system are always included in this list.
+
+=head3 Config.pl
+
+The L<Config.pl> script is used to update and configure the SEEDtk environment. When you
+add new scripts, it is always a good idea to rerun C<Config.pl> to insure everything has
+been made executable. In addition, you will use C<Config.pl> to initialize the environment
+during installation.
 
 
 =head2 The Source Modules
@@ -98,9 +136,10 @@ internally for SEEDtk development.
 
 =back
 
-When you add a module, you need to include it in the B<@modules> member of L<FIG_Config>
-in order to get it to work in Eclipse. In Unix, you need to add the module name to the
-modules list in C<seedtk-setup> and rerun the C<bootstrap> script.
+If you want to add your own module, you need to include it in the B<@modules> member of L<FIG_Config>
+in order to get it to work in the vanilla environment. In the alternate environment, you need
+to also add the module name to the modules list in C<seedtk-setup> and rerun the C<bootstrap>
+script.
 
 =head2 The Data Directory
 
@@ -243,7 +282,7 @@ in your L<FIG_Config> file, which is also where you specify the location of the 
 Both of these things can be overridden onthe command line when you invoke a database
 application.
 
-=head1 Setting up a Unix Environment
+=head1 Setting up an Alternate Environment
 
 In the examples below, it will be assumed your user name is C<self>. Simply substitute your real username
 when typing the commands.
@@ -331,10 +370,10 @@ configuration. Most of the time you'll just enter
     Config
 
 directly and everything will be fixed up automatically. You will not need to do this every time you
-change the code, only when you update L<FIG_Config> or an environment change is
+change the code, only when you update L<FIG_Config>, add a new script, or an environment change is
 made to the system as a whole.
 
-=head2 Using Git in Unix
+=head2 Using Git on the Command Line
 
 There is a GIT project for the project directory, one for the web directory, and one for each module.
 For each repository, there is a local copy on your hard drive and a shared copy in GITHUB. The local
@@ -402,11 +441,158 @@ from all of the module directories in succession. Simply enter
 
 into the command line.
 
-=head1 Setting Up an Eclipse Environment
+=head1 Setting Up a Vanilla Environment
 
-In Eclipse, the directory structure is very different. Each module is in its own private directory,
-and must be imported as a separate project. Under Windows, no makefile support is required and everything
-is executed directly in the Eclipse environment (or a command shell if you prefer).
+=head2 Preparation
+
+=head3 Preparing a Windows Machine
+
+Under Windows, you need Apache, PERL, GIT, and MySQL installed.
+
+The recommended PERL is ActivePerl. Currently, you must use the 32-bit version. At some point, the 64-bit
+version will be working again, but that has not been the case since PERL 5.20.  You can find it
+L<here|http://www.activestate.com/activeperl/downloads-2>. In addition to the default ActivePerl modules,
+you will need
+
+=over 4
+
+=item 1
+
+Getopt::Long::Descriptive
+
+=item 2
+
+File::Copy::Recursive
+
+=item 3
+
+XML::Writer
+
+=item 4
+
+DBD::MySQL
+
+=back
+
+To install GIT, go to L<https://git-scm.com/download/win>. We also support
+L<Github for Windows|https://desktop.github.com/>.
+
+To get everything else, install XAMPP, found L<here|https://www.apachefriends.org/download.html>.
+(Unless, of course, you know what you are doing and can install the bits yourself). You will
+want to suppress the default PERL and use ActivePerl instead.
+
+=head3 Preparing a Mac
+
+You will need MySQL, which can be found L<here|http//:dev.mysql.com/downloads/>.
+
+You will also need the following CPAN modules.
+
+=over 4
+
+=item 1
+
+Getopt::Long::Descriptive
+
+=item 2
+
+File::Copy::Recursive
+
+=item 3
+
+XML::Writer
+
+=item 4
+
+DBD::MySQL
+
+=back
+
+If you want to store images in the database, you will need L<GD>.  Currently this is not a big
+worry, because we haven't included diagrams in the database yet. However, if you want to try
+preparing for the future, you can try installing it. You can't install L<GD>
+using CPAN. Instead, you must install libgd. Use the commands below in
+a terminal window
+
+    curl -O http://wangqinhu.com/data/gd/gd.tar.gz >gd.tar.gz
+    tar -zxf gd.tar.gz
+    cd gd
+    sudo ./install
+
+You'll need to clean up the install files if it works.
+
+    rm *
+    cd ..
+    rmdir gd
+    rm gd.tar.gz
+
+=head2 Setting up the Database
+
+The default database configuration is designed for development on a few select Unix servers
+at the lab. You can, however, set up a local MySQL database for your own use. Go into
+C<SEEDtk/config/FIG_Config.pm> and make the following modification.
+
+    our $dbhost = "localhost";
+
+You will need to use MySQL to create a blank database and provide access to it with a
+password-protected user.
+
+    CREATE DATABASE seedtk_shrub;
+    GRANT ALL ON seedtk_shrub.* TO 'seed'@'localhost' IDENTIFIED BY 'dna=fun';
+
+Assuming you use the examples above (and you shouldn't), you would then configure
+the database name and user information in L<FIG_Config> as follows
+
+    our $shrubDB = "seedtk_shrub";
+    our $userData = "seed/dna=fun";
+
+Note that in the C<$userData> variable the string is the user name, a slash, and
+then the password. B<If you are using your own database, do not leave the C<$shrubDB>
+blank even if you are using the same name as the live database, because the live
+database name periodically changes!>
+
+There is a special name and password combination for accessing the live database from
+a remote computer over VPN. Contact L<Bruce Parrello|mailto:bparrello@figresearch.com>
+for the relevant information.
+
+=head2 Settinig Up a Vanilla Environment without Eclipse
+
+Once your machine is prepared, start by creating the top-level data and code directories.
+
+    mkdir SEEDtk
+    cd SEEDtk
+    mkdir GIT
+    mkdir Data
+
+It has been suggested that it would be less confusing if the root directory were called something
+other than C<SEEDtk>, because the project directory generally also has that name. But in fact, it
+doesn't matter what you call the root directory. The system is agnostic about it.
+
+Change to the code directory and clone the project directory project.
+
+    cd GIT
+    git clone https://github.com/SEEDtk/seedtk.git SEEDtk
+
+Now run the configuration script.
+
+    perl SEEDtk/Config.pl --dirs --links ../Data Web
+
+This downloads the rest of the project and configures everything for execution.
+
+You will note that the URL used is a read-only one-- you can pull from Github but you can't push back
+modifications. To be able to update the code, you need to be added as a member of the SEEDtk team so
+Github knows you are authorized. In addition, you need to add your Github user name to the URL. So,
+for example, if you want to be able to update kernel code, you would go to the C<kernel> directory
+and enter
+
+    github remote set-url origin https://USERNAME@github.com/SEEDtk/kernel.git
+
+where C<USERNAME> is your Github user name. You will then be required to enter your password each time
+you do a GIT operation in the kernel directory. (Alternatively, you can try to set up SSH support.)
+
+
+=head2 Setting Up a Vanilla Environment with Eclipse
+
+Setting up in Eclipse requires more work, because each module must be imported as a separate project.
 
 To begin, create a fresh workspace.
 
@@ -470,7 +656,7 @@ Go into your workspace directory and create a new folder called C<Data>.
 
 From the Eclipse menu, select I<Run, Run Configurations> to get the B<Create, manage, and run configurations>
 dialog. Click I<Perl Local> to highlight it and click the B<New> tool to create a new launch configuration.
-You should be on the I<Main> tab. Type C<utils> in the I<Project> box and C<scripts/Config.pl> in the
+You should be on the I<Main> tab. Type C<SEEDtk> in the I<Project> box and C<Config.pl> in the
 I<File to execute> box. Change the configuration name to C<Initial Configuration> so you know this is
 the first-time Config call. If you've done something wrong, you'll get a little error message at the
 top of the dialog and the I<Run> button will dim.
@@ -499,7 +685,7 @@ I<User Settings> tab, click I<Add Entry> and specify a key of C<core.autocrlf> a
 C<true>. This insures that your line endings are translated properly during transfers to and
 from the repository.
 
-=head2 The Config.pl Script
+=head3 The Config.pl Script
 
 From this point on, you will need to run the L<Config.pl> script periodically to re-sync with
 changes in your environment. Generally, it is required when you make a change to L<FIG_Config>,
@@ -510,7 +696,7 @@ After the first successful invocation, the only parameters you need are the comm
 C<eclipse> (and optionally C<gfw>). Create a new run configuration with just these arguments in it
 so you have one handy.
 
-=head2 Using the Command Line in Eclipse
+=head3 Using the Command Line in Eclipse
 
 To use the command line on an Eclipse-based system, you must establish the proper environment.
 The command-line is accessed via a terminal window. On the Mac, the terminal window is a common
@@ -526,7 +712,7 @@ easily.
 The problem is, the C<user-env> script is in your SEEDtk project directory and the terminal
 program won't be able to find it on its own.
 
-=head3 Invoking user-env in Windows
+=head4 Invoking user-env in Windows
 
 In Windows, you can start the TCF terminal add-on in the proper directory by selecting the
 SEEDtk project in the Eclipse navigation pane before clicking the terminal icon. Then
@@ -536,16 +722,16 @@ simply type
 
 and the environment will be set up for you.
 
-=head3 Invoking user-env on the Mac
+=head4 Invoking user-env on the Mac
 
-On the Mac, you must enter the full path to the scrit, and you have to source it.
+On the Mac, you must enter the full path to the script, and you have to source it.
 
     source /homes/fig/GIT/SEEDtk/user-env.sh
 
 To make the process easier, this command is displayed whenever you run the L<Config.pl>
 script.
 
-=head3 Command-Line Examples
+=head4 Command-Line Examples
 
 From the command line, you can update all of your projects from the GIT hub using the
 pull-all command
@@ -575,58 +761,7 @@ the L<Config.pl> script.
     Config --eclipse=SEEDtk
 
 
-=head2 Preparing the Mac
-
-You can't install L<GD> using CPAN. Instead, you must install libgd. Use the commands below in
-a terminal window
-
-    curl -O http://wangqinhu.com/data/gd/gd.tar.gz >gd.tar.gz
-    tar -zxf gd.tar.gz
-    cd gd
-    sudo ./install
-
-You'll need to clean up the install files if it works.
-
-    rm *
-    cd ..
-    rmdir gd
-    rm gd.tar.gz
-
-You will also need MySQL, which can be found L<here|http//:dev.mysql.com/downloads/>.
-
-=head2 Setting up the Database
-
-The default database configuration is designed for development on a few select Unix servers
-at the lab. You can, however, set up a local MySQL database for your own use. Go into
-C<SEEDtk/config/FIG_Config.pm> and make the following modification.
-
-    our $dbhost = "localhost";
-
-You will need to use MySQL to create a blank database and provide access to it with a
-password-protected user.
-
-    CREATE DATABASE seedtk_shrub;
-    GRANT ALL ON seedtk_shrub.* TO 'seed'@'localhost' IDENTIFIED BY 'dna=fun';
-
-Assuming you use the examples above (and you shouldn't), you would then configure
-the database name and user information in L<FIG_Config> as follows
-
-    our $shrubDB = "seedtk_shrub";
-    our $userData = "seed/dna=fun";
-
-Note that in the C<$userData> variable the string is the user name, a slash, and
-then the password. B<If you are using your own database, do not leave the C<$shrubDB>
-blank even if you are using the same name as the live database, because the live
-database name periodically changes!>
-
-Once you have created your database, you should download some genomes and subsystems
-and use L<ShrubLoadSubsystems.pl> and L<ShrubLoadGenomes.pl> to load it.
-
-There is a special name and password combination for accessing the live database from
-a remote computer over VPN. Contact L<Bruce Parrello|mailto:bparrello@figresearch.com>
-for the relevant information.
-
-=head2 Using GIT in Eclipse
+=head3 Using GIT in Eclipse
 
 Eclipse has built-in support for GIT. Since your projects were created from the GITHUB
 repository, they are permanently connected to the GITHUB repositories. Right-click on
@@ -639,6 +774,21 @@ to do this all the time, just at major points when the code is stable).
 To get the latest source from GITHUB, you can select the I<Pull> option. You
 can select multiple projects at the same time when doing a pull, which makes it
 very convenient.
+
+=head2 Loading the Database
+
+All the data in the database is stored in a TAR file at ftp://ftp.kbase.us/SEEDtk/reprepo.tar.gz.
+
+Download this file into your data directory. From a command-line prompt within that directory,
+do
+
+    ShrubLoad --clear --store --tar=reprepo.tar.gz
+
+On most modern laptops, a load takes about two hours. This procedure assumes you have set up a
+local database, as detailed above. If you are connected to a remote database, the above command
+will return an error.
+
+We update the tar file every one to two weeks.
 
 =head2 Activating the Development Web Site
 
