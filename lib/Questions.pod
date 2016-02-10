@@ -8,38 +8,6 @@ This document contains ongoing questions and problems.
 
 What is the proper way to manage a controlled vocabulary for roles?
 
-=item 1
-
-How should we structure pipeline scripts in a common fashion?
-
-=item 1
-
-Should we have a common prefix for script names?
-
-=item 1
-
-What should be the standard behavior for module failure?
-
-=item 1
-
-How do we implement the following database operations?
-
-=over 8
-
-=item 1
-
-Return all features implementing a specific function within a set of genomes.
-
-=item 1
-
-Change the function of a single feature.
-
-=item 1
-
-Return all features in a subsystem.
-
-=back
-
 =back
 
 =cut
