@@ -76,7 +76,7 @@ Unix scripts for facilitating configuration and maintenance.
 
 There are also several files in the project directory root that
 are used in deployment and setup and several subdirectories that are only
-relevant to the external environments for which the so-called Unix mode was
+relevant to the external environments for which the alternate mode was
 designed.
 
 =head3 FIG_Config
