@@ -777,7 +777,7 @@ very convenient.
 
 =head2 Loading the Database
 
-All the data in the database is stored in a TAR file at ftp://ftp.kbase.us/SEEDtk/reprepo.tar.gz.
+All the data in the database is stored in a TAR file at L<ftp://ftp.kbase.us/SEEDtk/reprepo.tar.gz>.
 
 Download this file into your data directory. From a command-line prompt within that directory,
 do
@@ -832,6 +832,14 @@ Mark the web directory folder as shared. This can be done with Finder.
 
 =back
 
+An example of the ApacheFix command for the Mac is given below.
+
+    ApacheFix --mac=/private/etc/apache2/httpd.conf --clear /private/etc/apache2/extra/httpd-vhosts.conf
+
+And for Windows
+
+    ApacheFix /xampp/apache/conf/other/httpd-vhosts.conf
+
 Once you've done all this, reboot the system to get the configuration changes
 stored and go to L<http://fig.localhost> in your browser.
 
@@ -859,13 +867,11 @@ descriptive.
 When updating Java, you must update the Java Development Kit, not the Java
 Runtime. Eclipse looks for the JDK when selecting its Java Virtual Machine.
 
-
-
 =back
 
 =head1 External Tools
 
-Severla SEEDtk modules make use of external tools. Each tool is associated with a POD document that explains
+Several SEEDtk modules make use of external tools. Each tool is associated with a POD document that explains
 how to install it. These are listed below.
 
 =over 4
