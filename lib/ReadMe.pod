@@ -472,6 +472,14 @@ XML::Writer
 
 DBD::MySQL
 
+=item 5
+
+JSON::XS
+
+=item 6
+
+IPC::Run3
+
 =back
 
 To install GIT, go to L<https://git-scm.com/download/win>. We also support
@@ -504,6 +512,14 @@ XML::Writer
 =item 4
 
 DBD::MySQL
+
+=item 5
+
+JSON::XS
+
+=item 6
+
+IPC::Run3
 
 =back
 
