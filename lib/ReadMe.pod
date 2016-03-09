@@ -480,6 +480,18 @@ JSON::XS
 
 IPC::Run3
 
+=item 7
+
+Spreadsheet::WriteExcel
+
+=item 8
+
+Spreadsheet::ParseExcel
+
+=item 9
+
+Spreadsheet::XLSX
+
 =back
 
 To install GIT, go to L<https://git-scm.com/download/win>. We also support
@@ -520,6 +532,18 @@ JSON::XS
 =item 6
 
 IPC::Run3
+
+=item 7
+
+Spreadsheet::WriteExcel
+
+=item 8
+
+Spreadsheet::ParseExcel
+
+=item 9
+
+Spreadsheet::XLSX
 
 =back
 
