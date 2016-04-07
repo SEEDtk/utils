@@ -20,7 +20,9 @@ package SeedAware;
 
     use strict;
     use warnings;
-    use IPC::Run3;
+    eval { ## Insure we compile under kBase.
+        require IPC::Run3;
+    };
     use File::Spec;
     use File::Temp;
     use FIG_Config;
