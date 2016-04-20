@@ -5,4 +5,5 @@ This file contains Bruce's current to-do list.
 =cut
 
     ## TODO in solid_projection, do not project to euks
+    ## TODO add the missing Core genomes to Patric
 
