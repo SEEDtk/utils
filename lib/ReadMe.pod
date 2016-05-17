@@ -13,6 +13,7 @@ and a B<scripts> subdirectory containing scripts.
     home
         Data
         GIT
+            Alexa
             ERDBtk
             SEEDtk
             RASTtk
@@ -33,6 +34,7 @@ a directory called B<modules>.
     SEEDtk
         Data
         modules
+            Alexa
             ERDBtk
             RASTtk
             tbltools
