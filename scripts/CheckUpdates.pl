@@ -261,7 +261,7 @@ if ($errors) {
             # Get all the files in this subdirectory.
             my $fullDir = "$fullMod/$dir";
             opendir(my $dh, "$fullDir") or die "Could not open $dir in $fullMod: $!";
-            my @files = grep { $_ =~ /^\w+\.\w+$/ && -f "$fullDir/$_" } readdir $dh;
+            my @files = grep { $_ =~ /^[\w\-]+\.\w+$/ && -f "$fullDir/$_" } readdir $dh;
             for my $file (@files) {
                 # Get this file's full name.
                 my $fullName = "$fullDir/$file";
