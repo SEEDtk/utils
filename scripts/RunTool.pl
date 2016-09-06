@@ -41,5 +41,9 @@ my ($cmd, @parms) = @ARGV;
 # Find the command.
 my $cmdPath = SeedAware::executable_for($cmd);
 die "Could not find $cmd." if ! $cmdPath;
+# Windows hack for paths with spaces.
+if ($cmdPath =~ /\s/) {
+    $cmdPath = $cmd;
+}
 # Execute the command.
 exec ($cmdPath, @parms) or die "Could not execute $cmd: $!";

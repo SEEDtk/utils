@@ -922,6 +922,14 @@ how to install it. These are listed below.
 
 L<BLAST+|InstallBlast>
 
+=item *
+
+L<SPAdes|InstallSPAdes>
+
+=item *
+
+L<Art Illumina|InstallArtIllumina>
+
 =back
 
 =head1 Useful Links
