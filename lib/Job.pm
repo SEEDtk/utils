@@ -168,7 +168,7 @@ sub Create {
             $retVal = system(1, 'perl', "$dir/$command.pl", @finalParms);
         } else {
             $retVal = 0;
-            my $rc = system(join(' ', "nohup perl $dir/$command.pl", @finalParms, '&'));
+            my $rc = system(join(' ', "$FIG_Config::proj/bin/$command", @finalParms, '&'));
             if ($rc) {
                 print "Command failed with return value $rc.\n";
             }
