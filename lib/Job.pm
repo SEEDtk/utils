@@ -26,7 +26,7 @@ package Job;
 
 =head1 Web Job Management
 
-This object manages an Alexa background job. Each job is assigned a UUID, and its status is stored in 
+This object manages an Alexa background job. Each job is assigned a UUID, and its status is stored in
 a file with the name C<Job.>I<UUID>C<.status>. The status file contains the following items, tab-separated.
 
 =over 4
@@ -54,7 +54,7 @@ A status message from the job.
 =back
 
 The job must create this object when it starts and call the L</Fail> method when it fails or the L</Finish> method when it
-terminates normally. It can call the L</Progress> method to record progress. It cannot use STDOUT, STDERR, or STDIN. 
+terminates normally. It can call the L</Progress> method to record progress. It cannot use STDOUT, STDERR, or STDIN.
 Web tasks can use the static L</Check> method to check the status of jobs in progress, Any with the C<completed> or C<failed>
 status will be reported, and the status changed to C<informed>.
 
@@ -63,7 +63,7 @@ performance problems with L</Check>.
 
 The static L</Create> method is used to create the job.
 
-Each job is assigned a private directory under the session directory with the 
+Each job is assigned a private directory under the session directory with the
 same name as the job's UUID. The L</workDir> method of this object returns the job's working directory and the
 L</opt> method returns the L<Getopt::Long::Descriptive::Opts> method for accessing the command-line options.
 
@@ -125,7 +125,7 @@ A list of the job's parameters.
 
 =item RETURN
 
-Returns the process ID of the job created.
+Returns the process ID of the job created (on Windows) or 0 (on Unix/Mac).
 
 =back
 
@@ -147,15 +147,22 @@ sub Create {
         # Create the work directory.
         my $workDir = "$sessionDir/$uuid";
         if (! -d $workDir) {
+            # Create the work directory.
             mkdir $workDir, 0777;
         }
+        print "Working directory is $workDir.\n";
+        print "Command found in $dir.\n";
         # Push the necessary communication parameters onto the parameter list.
         my @finalParms = ("--uuid=$uuid", "--name=$name", "--workDir=\"$workDir\"", "--statusFile=\"$statusFile\"", @parms);
         # Create the job. The job itself will create the status file.
         if ($FIG_Config::win_mode) {
             $retVal = system(1, 'perl', "$dir/$command.pl", @finalParms);
         } else {
-            $retVal = system("perl $dir/$command.pl " . join(' ', @finalParms, '&'));
+            $retVal = 0;
+            my $rc = system(join(' ', "perl $dir/$command.pl", @finalParms, '&'));
+            if ($rc) {
+                print "Command failed with return value $rc.\n";
+            }
         }
     }
     return $retVal;
@@ -266,6 +273,8 @@ sub new {
     };
     # Create the status file.
     UpdateStatus($retVal, 'running', "$0 command started.");
+    # Close the standard I/O streams to release the original job.
+    close(STDIN); close(STDOUT); close(STDERR);
     # Bless and return it.
     bless $retVal, $class;
     return $retVal;
@@ -388,6 +397,8 @@ sub UpdateStatus {
     if (open(my $oh, '>', $self->{statusFile})) {
         print $oh join("\t", $self->{taskName}, $self->{UUID}, $self->{pid}, $newStatus, $comment);
         close $oh;
+    } else {
+        die "Job status file open failed: $!";
     }
 }
 
