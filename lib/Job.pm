@@ -166,18 +166,9 @@ sub Create {
         # Create the job. The job itself will create the status file.
         if ($FIG_Config::win_mode) {
             $retVal = system(1, 'perl', "$dir/$command.pl", @finalParms);
-        } elsif (1) {
-            $retVal = fork();
-            if ($retVal) {
-                print "Process ID is $retVal.\n";
-            } elsif (defined $retVal) {
-                exec('perl', "$dir/$command.pl", @finalParms) || print "Execution error: $!";
-            } else {
-                print "Process failed to start: $!"
-            }
         } else {
             $retVal = 0;
-            my $rc = system(join(' ', "perl $dir/$command.pl", @finalParms, '&'));
+            my $rc = system(join(' ', "nohup perl $dir/$command.pl", @finalParms, '&'));
             if ($rc) {
                 print "Command failed with return value $rc.\n";
             }
