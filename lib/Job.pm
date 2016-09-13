@@ -162,7 +162,7 @@ sub Create {
         print "Working directory is $workDir.\n";
         print "Command found in $dir.\n";
         # Push the necessary communication parameters onto the parameter list.
-        my @finalParms = ("--uuid=$uuid", "--name=$name", "--workDir=\"$workDir\"", "--statusFile=\"$statusFile\"", @parms);
+        my @finalParms = ("--uuid=$uuid", "--name=\"$name\"", "--workDir=\"$workDir\"", "--statusFile=\"$statusFile\"", @parms);
         # Create the job. The job itself will create the status file.
         if ($FIG_Config::win_mode) {
             $retVal = system(1, 'perl', "$dir/$command.pl", @finalParms);
