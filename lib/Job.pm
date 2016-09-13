@@ -1,0 +1,421 @@
+#
+# Copyright (c) 2003-2015 University of Chicago and Fellowship
+# for Interpretations of Genomes. All Rights Reserved.
+#
+# This file is part of the SEED Toolkit.
+#
+# The SEED Toolkit is free software. You can redistribute
+# it and/or modify it under the terms of the SEED Toolkit
+# Public License.
+#
+# You should have received a copy of the SEED Toolkit Public License
+# along with this program; if not write to the University of Chicago
+# at info@ci.uchicago.edu or the Fellowship for Interpretation of
+# Genomes at veronika@thefig.info or download a copy from
+# http://www.theseed.org/LICENSE.TXT.
+#
+
+
+package Job;
+
+    use strict;
+    use warnings;
+    use Data::UUID;
+    use Getopt::Long::Descriptive;
+    use FIG_Config;
+
+=head1 Web Job Management
+
+This object manages an Alexa background job. Each job is assigned a UUID, and its status is stored in 
+a file with the name C<Job.>I<UUID>C<.status>. The status file contains the following items, tab-separated.
+
+=over 4
+
+=item *
+
+A task name, assigned by the object client.
+
+=item *
+
+The UUID of the job.
+
+=item *
+
+The process ID of the job.
+
+=item *
+
+The job status-- C<running>, C<completed>, C<failed>, or C<informed>.
+
+=item *
+
+A status message from the job.
+
+=back
+
+The job must create this object when it starts and call the L</Fail> method when it fails or the L</Finish> method when it
+terminates normally. It can call the L</Progress> method to record progress. It cannot use STDOUT, STDERR, or STDIN. 
+Web tasks can use the static L</Check> method to check the status of jobs in progress, Any with the C<completed> or C<failed>
+status will be reported, and the status changed to C<informed>.
+
+The static L</Purge> method can be used to remove all jobs with status C<informed>. This should be done periodically to avoid
+performance problems with L</Check>.
+
+The static L</Create> method is used to create the job.
+
+Each job is assigned a private directory under the session directory with the 
+same name as the job's UUID. The L</workDir> method of this object returns the job's working directory and the
+L</opt> method returns the L<Getopt::Long::Descriptive::Opts> method for accessing the command-line options.
+
+This object contains the following fields.
+
+=over 4
+
+=item workDir
+
+The name of the working directory for the job.
+
+=item statusFile
+
+The name of the job's status file.
+
+=item UUID
+
+The job's ID.
+
+=item pid
+
+The job's process ID.
+
+=item taskName
+
+The job's task name.
+
+=item opt
+
+The L<Getopt::Long::Descriptive::Opts> object for the command-line options.
+
+=back
+
+=head2 Static Methods for Web Interface
+
+=head3 Create
+
+    my $pid = Job::Create($sessionDir, $name, $command, @parms);
+
+Create a new job.
+
+=over 4
+
+=item sessionDir
+
+The name of the session directory to contain the working files of the job.
+
+=item name
+
+The user-friendly name of the job.
+
+=item command
+
+The command to execute (without the C<.pl> suffix). It must be a script in the SEEDtk script libraries.
+
+=item parms
+
+A list of the job's parameters.
+
+=item RETURN
+
+Returns the process ID of the job created.
+
+=back
+
+=cut
+
+sub Create {
+    my ($sessionDir, $name, $command, @parms) = @_;
+    my $retVal;
+    # Find the script.
+    my ($dir) = grep { -f "$_/$command.pl" } @FIG_Config::scripts;
+    if (! $dir) {
+        die "Could not find command $command.";
+    } else {
+        # Compute a UUID.
+        my $uuidObj = Data::UUID->new;
+        my $uuid = $uuidObj->create_str();
+        # Compute the status file name.
+        my $statusFile = "$sessionDir/Job.$uuid.status";
+        # Create the work directory.
+        my $workDir = "$sessionDir/$uuid";
+        if (! -d $workDir) {
+            mkdir $workDir, 0777;
+        }
+        # Push the necessary communication parameters onto the parameter list.
+        my @finalParms = ("--uuid=$uuid", "--name=$name", "--workDir=\"$workDir\"", "--statusFile=\"$statusFile\"", @parms);
+        # Create the job. The job itself will create the status file.
+        if ($FIG_Config::win_mode) {
+            $retVal = system(1, 'perl', "$dir/$command.pl", @finalParms);
+        } else {
+            $retVal = system("perl $dir/$command.pl " . join(' ', @finalParms, '&'));
+        }
+    }
+    return $retVal;
+}
+
+=head3 Check
+
+    my $statusList = Job::Check($sessionDir);
+
+Return a list of all the jobs in the session directory that have completed or failed since the last check.
+
+=over 4
+
+=item sessionDir
+
+The name of the session directory containing the job status files.
+
+=item RETURN
+
+Returns a reference to a list of statements about the updated jobs.
+
+=back
+
+=cut
+
+sub Check {
+    ##TODO Check method, remember to verify pids of running jobs
+}
+
+=head3 Purge
+
+    my $count = Job::Purge($sessionDir);
+
+Purge all jobs with a status of C<informed> from the session directory.
+
+=over 4
+
+=item sessionDir
+
+The session directory containing the jobs.
+
+=item RETURN
+
+Returns the number of jobs purged.
+
+=back
+
+=cut
+
+sub Purge {
+    ##TODO Purge method
+}
+
+=head2 Special Methods
+
+=head3 new
+
+    my $jobObject = $jobObject->new($parmComment, @options);
+
+Initialize the current job. This method is called from within the command script.
+
+=over 4
+
+=item parmComment
+
+The comment describing the positional parameters.
+
+=item options
+
+The L<Getopt::Long::Descriptive> descriptors for the command-line options.
+
+=item RETURN
+
+Returns a L</Job Object> containing information about the job.
+
+=back
+
+=cut
+
+sub new {
+    my ($class, $parmComment, @options) = @_;
+    # Parse the command line.
+    my ($opt, $usage) = describe_options("%c %o $parmComment",
+            ['uuid=s', 'global unique ID string for this job', { required => 1 }],
+            ['name=s', 'name of this job', { required => 1 }],
+            ['statusFile=s', 'name of the job status file', { required => 1 }],
+            ['workDir=s', 'name of the job work directory', { required => 1 }],
+            @options,
+           [ "help|h", "display usage information", { shortcircuit => 1}]);
+    # The above method dies if the options are invalid. We check here for the HELP option.
+    if ($opt->help) {
+        print $usage->text;
+        exit;
+    }
+    # Here we are ready to run. Get the job object fields.
+    my $uuid = $opt->uuid;
+    my $workDir = $opt->workdir;
+    my $statusFile = $opt->statusfile;
+    my $taskName = $opt->name;
+    # Create the object.
+    my $retVal = {
+        workDir => $workDir,
+        statusFile => $statusFile,
+        UUID => $uuid,
+        pid => $$,
+        opt => $opt,
+        taskName => $taskName
+    };
+    # Create the status file.
+    UpdateStatus($retVal, 'running', "$0 command started.");
+    # Bless and return it.
+    bless $retVal, $class;
+    return $retVal;
+}
+
+=head2 Public Methods
+
+=head3 Progress
+
+    $jobObject->Progress($jobObject, $comment);
+
+Denote that the job is making progress.
+
+=over 4
+
+=item jobObject
+
+The L</Job Object> for the current job.
+
+=item comment
+
+A comment to place in the status file denoting the degree of progress.
+
+=back
+
+=cut
+
+sub Progress {
+    my ($self, $comment) = @_;
+    $self->UpdateStatus('running', $comment);
+}
+
+=head3 Fail
+
+    $jobObject->Fail($comment);
+
+Denote that the job has failed.
+
+=over 4
+
+=item jobObject
+
+The L</Job Object> for the current job.
+
+=item comment
+
+A comment to place in the status file denoting the type of failure.
+
+=back
+
+=cut
+
+sub Fail {
+    my ($self, $comment) = @_;
+    $self->UpdateStatus('failed', $comment);
+}
+
+=head3 Finish
+
+    $jobObject->Finish($jobObject, $comment);
+
+Denote that the job has finished.
+
+
+=over 4
+
+=item jobObject
+
+The L</Job Object> for the current job.
+
+=item comment
+
+A comment to place in the status file regarding the completion.
+
+=back
+
+=cut
+
+sub Finish {
+    my ($self, $comment) = @_;
+    $self->UpdateStatus('completed', $comment);
+}
+
+=head3 statusFile
+
+    my $fileName = $jobObject->statusFile;
+
+Return the name of the job's status file.
+
+=cut
+
+sub statusFile {
+    my ($self) = @_;
+    return $self->{statusFile};
+}
+
+=head3 UpdateStatus
+
+    $jobObject->UpdateStatus($newStatus, $comment);
+
+Update the status of this job and include a comment.
+
+=over 4
+
+=item newStatus
+
+New job status-- C<running>, C<completed>, or C<informed>.
+
+=item comment
+
+Comment to place in the status file.
+
+=back
+
+=cut
+
+sub UpdateStatus {
+    my ($self, $newStatus, $comment) = @_;
+    # Open and write the file.
+    if (open(my $oh, '>', $self->{statusFile})) {
+        print $oh join("\t", $self->{taskName}, $self->{UUID}, $self->{pid}, $newStatus, $comment);
+        close $oh;
+    }
+}
+
+=head3 workDir
+
+    my $dirName = $jobObject->workDir;
+
+Return the name of the job's working directory.
+
+=cut
+
+sub workDir {
+    my ($self) = @_;
+    return $self->{workDir};
+}
+
+=head3 opt
+
+    my $opts = $jobObject->opt;
+
+Return the L<Getopt::Long::Descriptive> object for the command-line options of this job.
+
+=cut
+
+sub opt {
+    my ($self) = @_;
+    return $self->{opt};
+}
+
+
+1;
