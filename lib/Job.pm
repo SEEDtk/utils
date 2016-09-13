@@ -167,11 +167,19 @@ sub Create {
         if ($FIG_Config::win_mode) {
             $retVal = system(1, 'perl', "$dir/$command.pl", @finalParms);
         } else {
-            $retVal = 0;
-            my $rc = system(join(' ', "perl -I $FIG_Config::proj/config $dir/$command.pl", @finalParms, '&'));
-            if ($rc) {
-                print "Command failed with return value $rc.\n";
+            $retVal = fork;
+            if ($retVal) {
+                print "Process ID is $retVal.\n";
+            } elsif (defined $retVal) {
+                exec('perl', "-I$FIG_Config::proj/config", "$dir/$command.pl", @finalParms)
+                    || die "Failed to execute $command: $!";
+            } else {
+                die "Could not create job for $command."l
             }
+#            my $rc = system(join(' ', "perl -I $FIG_Config::proj/config $dir/$command.pl", @finalParms, '&'));
+#            if ($rc) {
+#                print "Command failed with return value $rc.\n";
+#            }
         }
     }
     return $retVal;
