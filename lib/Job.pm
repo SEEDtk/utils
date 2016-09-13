@@ -174,7 +174,7 @@ sub Create {
                 exec('perl', "-I$FIG_Config::proj/config", "$dir/$command.pl", @finalParms)
                     || die "Failed to execute $command: $!";
             } else {
-                die "Could not create job for $command."l
+                die "Could not create job for $command: $!";
             }
 #            my $rc = system(join(' ', "perl -I $FIG_Config::proj/config $dir/$command.pl", @finalParms, '&'));
 #            if ($rc) {
