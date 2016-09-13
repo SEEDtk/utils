@@ -23,6 +23,7 @@ package Job;
     use Data::UUID;
     use Getopt::Long::Descriptive;
     use FIG_Config;
+    use File::Copy::Recursive;
 
 =head1 Web Job Management
 
@@ -95,6 +96,14 @@ The job's task name.
 
 The L<Getopt::Long::Descriptive::Opts> object for the command-line options.
 
+=item status
+
+The current status of the job (C<running>, C<failed>, C<completed>, or C<informed>).
+
+=item comment
+
+The last comment about the job's progress and/or status.
+
 =back
 
 =head2 Static Methods for Web Interface
@@ -125,11 +134,7 @@ A list of the job's parameters.
 
 =item RETURN
 
-<<<<<<< HEAD
-Returns the process ID of the job created (for Windows)
-=======
 Returns the process ID of the job created (on Windows) or 0 (on Unix/Mac).
->>>>>>> branch 'master' of https://github.com/SEEDtk/utils
 
 =back
 
@@ -174,7 +179,7 @@ sub Create {
 
 =head3 Check
 
-    my $statusList = Job::Check($sessionDir);
+    my $statusList = Job::Check($sessionDir, $complete);
 
 Return a list of all the jobs in the session directory that have completed or failed since the last check.
 
@@ -184,6 +189,10 @@ Return a list of all the jobs in the session directory that have completed or fa
 
 The name of the session directory containing the job status files.
 
+=item complete
+
+If TRUE, all jobs will be reported. If FALSE, only completed jobs.
+
 =item RETURN
 
 Returns a reference to a list of statements about the updated jobs.
@@ -192,8 +201,10 @@ Returns a reference to a list of statements about the updated jobs.
 
 =cut
 
+use constant STATUS_VERB => { running => 'is', terminated => 'was', informed => 'is' };
+
 sub Check {
-    my ($sessionDir) = @_;
+    my ($sessionDir, $complete) = @_;
     # This will be the return list.
     my @retVal;
     # This will count the open failures.
@@ -201,11 +212,31 @@ sub Check {
     # Get all the job status files.
     my $jobsL = GetJobFiles($sessionDir);
     for my $job (@$jobsL) {
-        if (open(my $ih, "<$sessionDir/$job")) {
-            ##TODO
+        # Get the job status.
+        my $jobObject = Job->new_from_file($sessionDir, $job);
+        my $status = $jobObject->{status};
+        my $comment = $jobObject->{comment};
+        if ($status ne 'informed') {
+            if ($status eq 'running') {
+                # Verify the job is still running.
+                my $pid = $jobObject->{pid};
+                my $rc = kill(0, $pid);
+                # If it is not running, it terminated.
+                if (! $rc) {
+                    $status = 'terminated';
+                }
+            }
+            my $phrase = STATUS_VERB->{$status} // 'has';
+            if ($status ne 'running' || $complete) {
+                push @retVal, "$jobObject->{taskName} $phrase $status: $comment";
+            }
+            if ($status ne 'running') {
+                $jobObject->UpdateStatus('informed', $comment);
+            }
         }
     }
-    ##TODO Check method, remember to verify pids of running jobs
+    # Return the list of messages.
+    return \@retVal;
 }
 
 =head3 Purge
@@ -229,7 +260,22 @@ Returns the number of jobs purged.
 =cut
 
 sub Purge {
-    ##TODO Purge method
+    my ($sessionDir) = @_;
+    # This will count the jobs purged.
+    my $retVal = 0;
+    # Get the list of job status files.
+    my $jobList = GetJobFiles($sessionDir);
+    # Loop through them.
+    for my $job (@$jobList) {
+        my $jobObject = Job->new_from_file($sessionDir, $job);
+        if ($jobObject->{status} eq 'informed') {
+            unlink $jobObject->{statusFile};
+            File::Copy::Recursive::pathrmdir($jobObject->workDir);
+            $retVal++;
+        }
+    }
+    # Return the count.
+    return $retVal;
 }
 
 =head2 Static Internal Methods
@@ -322,10 +368,52 @@ sub new {
         comment => $comment,
     };
     # Create the status file.
-
     UpdateStatus($retVal, $status, $comment);
     # Close the standard I/O streams to release the original job.
     close(STDIN); close(STDOUT); close(STDERR);
+    # Bless and return it.
+    bless $retVal, $class;
+    return $retVal;
+}
+
+=head3 new_from_file
+
+    my $jobObject = Job->new_from_file($sessionDir, $statusFile);
+
+Create a job object for an external job from its status file. This is a crippled version of the object that
+will not have an L</opt> member.
+
+=over 4
+
+=item sessionDir
+
+Session directory containing the status file.
+
+=item statusFile
+
+Name of the status file.
+
+=back
+
+=cut
+
+sub new_from_file {
+    my ($class, $sessionDir, $statusFile) = @_;
+    # Read the status file.
+    open(my $ih, '<', "$sessionDir/$statusFile") || die "Could not open job file $statusFile: $!";
+    my $line = <$ih>;
+    die "Job file $statusFile is empty." if ! $line;
+    my ($taskName, $uuid, $pid, $status, $comment) = split "\t", $line;
+    # Create the object.
+    my $retVal = {
+        workDir => "$sessionDir/$uuid",
+        statusFile => "$sessionDir/$statusFile",
+        UUID => $uuid,
+        pid => $pid,
+        taskName => $taskName,
+        status => $status,
+        comment => $comment
+    };
     # Bless and return it.
     bless $retVal, $class;
     return $retVal;
@@ -422,6 +510,34 @@ sub statusFile {
     return $self->{statusFile};
 }
 
+=head3 workDir
+
+    my $dirName = $jobObject->workDir;
+
+Return the name of the job's working directory.
+
+=cut
+
+sub workDir {
+    my ($self) = @_;
+    return $self->{workDir};
+}
+
+=head3 opt
+
+    my $opts = $jobObject->opt;
+
+Return the L<Getopt::Long::Descriptive> object for the command-line options of this job.
+
+=cut
+
+sub opt {
+    my ($self) = @_;
+    return $self->{opt};
+}
+
+=head2 Private Object Methods
+
 =head3 UpdateStatus
 
     $jobObject->UpdateStatus($newStatus, $comment);
@@ -453,31 +569,6 @@ sub UpdateStatus {
     }
 }
 
-=head3 workDir
-
-    my $dirName = $jobObject->workDir;
-
-Return the name of the job's working directory.
-
-=cut
-
-sub workDir {
-    my ($self) = @_;
-    return $self->{workDir};
-}
-
-=head3 opt
-
-    my $opts = $jobObject->opt;
-
-Return the L<Getopt::Long::Descriptive> object for the command-line options of this job.
-
-=cut
-
-sub opt {
-    my ($self) = @_;
-    return $self->{opt};
-}
 
 
 1;
