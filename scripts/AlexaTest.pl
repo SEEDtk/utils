@@ -1,5 +1,5 @@
 use strict;
-use FIG_Config;
+use Job_Config;
 use Job;
 
 my $jobObject = Job->new('', ['time=i', 'number of intervals to wait', { default => 10 }]);
