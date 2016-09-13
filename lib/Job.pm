@@ -125,7 +125,7 @@ A list of the job's parameters.
 
 =item RETURN
 
-Returns the process ID of the job created.
+Returns the process ID of the job created (for Windows)
 
 =back
 
@@ -182,6 +182,18 @@ Returns a reference to a list of statements about the updated jobs.
 =cut
 
 sub Check {
+    my ($sessionDir) = @_;
+    # This will be the return list.
+    my @retVal;
+    # This will count the open failures.
+    my $failCount = 0;
+    # Get all the job status files.
+    my $jobsL = GetJobFiles($sessionDir);
+    for my $job (@$jobsL) {
+        if (open(my $ih, "<$sessionDir/$job")) {
+            ##TODO
+        }
+    }
     ##TODO Check method, remember to verify pids of running jobs
 }
 
@@ -207,6 +219,35 @@ Returns the number of jobs purged.
 
 sub Purge {
     ##TODO Purge method
+}
+
+=head2 Static Internal Methods
+
+=head3 GetJobFiles
+
+    my $fileNameList = Job::GetJobFiles($sessionDir);
+
+Return a list of the job status files in the specified directory.
+
+=over 4
+
+=item sessionDir
+
+Session directory containing job status files.
+
+=item RETURN
+
+Returns a reference to a list of the file names (not including the directoy path).
+
+=back
+
+=cut
+
+sub GetJobFiles {
+    my ($sessionDir) = @_;
+    opendir(my $dh, $sessionDir) || die "Could not read session directory: $!";
+    my @retVal = grep { $_ =~ /^Job\.[A-F0-9\-]+\.status$/ } readdir $dh;
+    return \@retVal;
 }
 
 =head2 Special Methods
@@ -255,6 +296,9 @@ sub new {
     my $workDir = $opt->workdir;
     my $statusFile = $opt->statusfile;
     my $taskName = $opt->name;
+    # Compute the status.
+    my $status = 'running';
+    my $comment = "$0 command started.";
     # Create the object.
     my $retVal = {
         workDir => $workDir,
@@ -262,10 +306,12 @@ sub new {
         UUID => $uuid,
         pid => $$,
         opt => $opt,
-        taskName => $taskName
+        taskName => $taskName,
+        status => $status,
+        comment => $comment,
     };
     # Create the status file.
-    UpdateStatus($retVal, 'running', "$0 command started.");
+    UpdateStatus($retVal, $status, $comment);
     # Bless and return it.
     bless $retVal, $class;
     return $retVal;
