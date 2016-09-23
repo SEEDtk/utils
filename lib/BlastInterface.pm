@@ -1371,7 +1371,9 @@ sub get_query
     my( $query, $tempD, $parms ) = @_;
 #   returns query-file
 
-    &valid_fasta( $query, "$tempD/query" );
+    my $retVal = &valid_fasta( $query, "$tempD/query" );
+    print "Query file is $retVal.\n"; ##TODO debugging
+    return $retVal; ##TODO debugging
 }
 
 
