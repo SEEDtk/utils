@@ -1440,6 +1440,8 @@ sub valid_fasta
 
     if ( defined($seq_src) && (! ref($seq_src)) && ($seq_src ne '') )
     {
+        my $size = -s $seq_src; ##TODO debugging
+        print "seq_src = $seq_src. Size $size.\n"; ##TODO debugging
         if (-s $seq_src)
         {
             $out_file = $seq_src;
