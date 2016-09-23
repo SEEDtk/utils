@@ -1372,8 +1372,6 @@ sub get_query
 #   returns query-file
 
     my $retVal = &valid_fasta( $query, "$tempD/query" );
-    print "Query file is $retVal.\n"; ##TODO debugging
-    return $retVal; ##TODO debugging
 }
 
 
@@ -1442,8 +1440,6 @@ sub valid_fasta
 
     if ( defined($seq_src) && (! ref($seq_src)) && ($seq_src ne '') )
     {
-        my $size = -s $seq_src; ##TODO debugging
-        print "seq_src = $seq_src. Size $size.\n"; ##TODO debugging
         if (-s $seq_src)
         {
             $out_file = $seq_src;
