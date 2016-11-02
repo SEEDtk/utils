@@ -28,7 +28,7 @@ use SeedAware;
     RunTool.pl [ options ] toolName parms
 
 This script runs a SEEDtk tool. It can be used even if the tool is not in the path, so long as its
-directory is listed in the C<@tools> member of L<FIG_Config>. 
+directory is listed in the C<@tools> member of L<FIG_Config>.
 
 =head2 Parameters
 
