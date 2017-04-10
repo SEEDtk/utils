@@ -780,15 +780,18 @@ sub GetLine {
     my $line = <$handle>;
     # Only proceed if we found something.
     if (defined $line) {
-        # Remove the new-line. We are a bit over-cautious here because the file may be coming in via an
-        # upload control and have a nonstandard EOL combination.
-        $line =~ s/(\r|\n)+$//;
         # If the line is empty, return a single empty string; otherwise, parse
         # it into fields.
         if ($line eq "") {
             push @retVal, "";
         } else {
-            push @retVal, split /\t/,$line;
+            # Remove the new-line. We are a bit over-cautious here because the file may be coming in via an
+            # upload control and have a nonstandard EOL combination.
+            my @fields = split /\t/, $line;
+            if (@fields) {
+                $fields[$#fields] =~ s/[\r\n]+$//;
+            }
+            push @retVal, @fields;
         }
     }
     # Return the result.
