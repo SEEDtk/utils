@@ -1,0 +1,130 @@
+=head1 The SEED Projection Repository
+
+The SEED Project has as a primary goal producing annotations for the
+rapidly growing collection of available genomes.  The strategy
+we have formulated involves a coordinated effort involving two teams:
+
+=over 4
+
+=item 1
+
+The Annotation Team produces a stream of high-quality
+Subsystems.  Each subsystem includes a populated spreadsheet,
+and this spreadsheet can be used to recognize the roles that make up the subsystem.  These subsystems are
+manually curated on the coreSEED, a SEED with access restricted
+to a small set of senior annotators.
+
+=item 2
+
+The Projection Team has the task of developing the tools needed
+to project the subsystems onto the growing body of available
+genomes.   For each role in each subsystem, projection refers to
+predicting the functions of the pegs in an arbitrary collection of genomes.
+
+=back
+
+This strategy has the property that it expands the set of projected roles based on the availability of subsystems containing
+new roles.  It induces a prioritization on the process of cleaning up our existing annotations.  We plan on creating new
+subsystems as they are required for metabolic modeling or other areas of particular interest.  Currently we believe that
+less than 3000 roles are included in our existing core machinery and metabolic models.  This relatively low number
+(in comparison with the hundreds of thousands of unique protein names in common use) should enable us to implement an
+ effective, high-throughput annotation engine for the new genomes being sequenced over the coming years.
+
+The purpose of this document is to facilitate development of projection algorithms. We dynamically create two random
+subsets of the repository genomes-- a I<training set> and a I<test set>. The projection algorithm is created using the
+training set and evaluated on the test set.
+
+=head2 Description of the Repository
+
+We are making available a repository of data relating to the
+subsystems, the genomes that were used in construction of
+subsystems, and tools for comparing the output of distinct projection algorithms with those produced by the annotation team.
+
+A release of the SEED Projection Repository is contained in a single directory named
+C<ProblemSets.>I<DATE> (where I<DATE> will be of the form I<YYYY>C<.>I<MM>). The first
+release will be ProblemSets.2017.06.
+
+The main directory will contain two subdirectories: C<GenomeData> and C<SubsystemsData>.
+
+=over 4
+
+=item GenomeData
+
+This directory will contain data relating to the genomes for which we have confidence in the annotations.
+Each genome in the collection is contained within a subdirectory of C<GenomeData>, and the name of the subdirectory is
+the SEED genome id (e.g., C<83333.1> for Escherichia coli K12).  Within one of these directories (e.g.,
+C<ProblemSets.2017.06/GenomeData/83333.1>) there will be four files:
+
+=over 8
+
+=item name
+
+contains a single line with the genome name.
+
+=item contigs
+
+will be a FASTA file containing the sequences of the contigs that make up the genome.
+
+=item peg-info
+
+is a 3-column, tab-separated text table, each record corresponding to a protein-encoding gene, and containing
+(0) the PEG ID, (1) the location of the PEG, and (2) its functional assignment (annotation).
+Each location is itself a comma-separated list of regions. Each region is encoded in the form I<contig>C<_>I<begin>I<+->I<len>
+where I<contig> is the contig ID, I<begin> is the starting location of the PEG, I<+-> is a single character
+representing the strand, and I<len> is the length in bases. For example, the region C<NC_000913_7959-1431> is the string
+of DNA formed by looking at the sequence of contig NC_000913, starting at location 7959 for a length of
+1431. Since, the strand is negative, the sequence of the region is the reverse complement of the string from
+positions 6529 through 7959 (this is not obvious).
+
+=item peg-trans
+
+is a FASTA file of the protein translations of the PEGs.
+
+=back
+
+=item SubsystemData
+
+This directory will contain information relating to a set of
+relatively reliable subsystems; these are manually curated and are
+considered to represent our highest-quality function assignments.
+Each subsystem will contain a set of Roles, a set of genomes, and
+the PEGs from those genomes that implement the roles within the
+subsystem.  It is implied that for any genome in the subsystem,
+all of the PEGs that are believed to implement roles of the
+subsystem will be listed.  The subdirectories for C<SubsystemData>
+each contain data relating to a specific subsystem, with the directory name
+being a translation of the subsystem name (spaces converted to underscores).  Thus,
+C<ProblemSets.2017.06/SubsystemData/Histidine_Degradation>
+will include data relating to the roles included in the subsystem
+C<Histidine Degradation>.  Each subsystem directory can be thought of as
+describing a group of training sets for the roles
+included in the subsystem.  Each subsystem directory will contain
+three files:
+
+=over 8
+
+=item Roles
+
+will be a file containing one line for each role of the subsystem.  Note that these roles, in effect, impose
+a controlled vocabulary.
+
+=item GenomesInSubsys
+
+will be a file containing the IDs of the genomes in the subsystem, one genome ID per line.
+
+=item PegsInSubsys
+
+will be a 2-column table, one record per PEG, containing (0) the PEG ID and (1) the role associated with the PEG.
+
+=back
+
+=back
+
+=head2 Intended Use of the Repository
+
+We propose that projection programs construct 2-column tables containing
+
+   [PEG,annotation]
+
+and that these form the basis for comparison of annotations.
+
