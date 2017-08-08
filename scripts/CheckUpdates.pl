@@ -233,8 +233,12 @@ if ($errors) {
             my $line = <$ih>;
             $stats->Add(cvsEntryLine => 1);
             if ($line =~ m#^/([^/]+)/\d+\.\d+/([^/]+)/#) {
-                # Here we have a file name and date.
-                my ($name, $dateTime) = ($1, DateTime::Format::Flexible->parse_datetime("$2 UTC"));
+                # Here we have a file name and date. Insure we ignore special commands.
+                my $dateThing = $2;
+                if ($dateThing =~ /\+(.+)/) {
+                    $dateThing = $1;
+                }
+                my ($name, $dateTime) = ($1, DateTime::Format::Flexible->parse_datetime("$dateThing UTC"));
                 $seedFiles{$dir}{$name} = [$dateTime, "$fullDir/$name"];
                 $stats->Add(cvsEntryFile => 1);
             }
