@@ -46,4 +46,4 @@ if ($cmdPath =~ /\s/) {
     $cmdPath = $cmd;
 }
 # Execute the command.
-exec ($cmdPath, @parms) or die "Could not execute $cmd: $!";
+system ($cmdPath, @parms) == 0 or die "$cmdPath failed: $?";
