@@ -65,13 +65,14 @@ if (! $dir) {
 # Create the statistics object.
 my $stats = Stats->new();
 # Start with the directory.
+my $first = 1;
 my @files = $dir;
 while (my $file = shift @files) {
     print "$file: ";
     # Is this a subdirectory?
     if (-d $file) {
         # Only proceed if we are deep.
-        if (! $opt->shallow) {
+        if ($first || ! $opt->shallow) {
             # Open the directory to get the files.
             opendir(my $dh, $file) || die "Could not open $dir: $!";
             # Get all the files.
@@ -80,6 +81,7 @@ while (my $file = shift @files) {
             print "directory, " . scalar(@subfiles) . " files found.\n";
             push @files, map { "$file/$_" } @subfiles;
             $stats->Add(directories => 1);
+            $first = 0;
         }
     } else {
         # Here we have a normal file. Compute the suffix.
