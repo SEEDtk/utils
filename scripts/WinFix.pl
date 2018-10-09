@@ -29,22 +29,29 @@ use Stats;
 
 This script will run through all the files in a directory fixing line endings in the text files.
 It is used to clean up after a Windows-to-Mac transfer. A file is considered text if it does not
-have a specifically non-text line ending. BLAST database files will be deleted, as these are
+have a specifically non-text file extension. BLAST database files will be deleted, as these are
 incompatible between machines and are regenerated automatically.
 
 =head2 Parameters
 
-The single positional parameter is a directory name.
+The single positional parameter is a directory name. The command-line parameters are
+
+=over 4
+
+=item shallow
+
+If specified, subdirectories will not be processed recursively.
 
 =cut
 
 # These constants determine which suffixes require special handling.
 use constant BIN_SUFFIX => { gz => 1, zip => 1, z => 1, xlsx => 1, xls => 1, xlsm => 1 };
-use constant DEL_SUFFIX => { nhr => 1, nin => 1, nsq => 1, phr => 1, pin => 1, psq => 1, 
+use constant DEL_SUFFIX => { nhr => 1, nin => 1, nsq => 1, phr => 1, pin => 1, psq => 1,
                              psd => 1, aux => 1, loo => 1, psi => 1, rps => 1 };
 
 # Get the command-line parameters.
 my $opt = ScriptUtils::Opts('dir',
+        ['shallow', 'do not recurse into directories']
         );
 # Get the input directory.
 my ($dir) = @ARGV;
@@ -63,14 +70,17 @@ while (my $file = shift @files) {
     print "$file: ";
     # Is this a subdirectory?
     if (-d $file) {
-        # Open the directory to get the files.
-        opendir(my $dh, $file) || die "Could not open $dir: $!";
-        # Get all the files.
-        my @subfiles = sort grep { substr($_, 0, 1) ne '.' } readdir $dh;
-        close $dh;
-        print "directory, " . scalar(@subfiles) . " files found.\n";
-        push @files, map { "$file/$_" } @subfiles;
-        $stats->Add(directories => 1);
+        # Only proceed if we are deep.
+        if (! $opt->shallow) {
+            # Open the directory to get the files.
+            opendir(my $dh, $file) || die "Could not open $dir: $!";
+            # Get all the files.
+            my @subfiles = sort grep { substr($_, 0, 1) ne '.' } readdir $dh;
+            close $dh;
+            print "directory, " . scalar(@subfiles) . " files found.\n";
+            push @files, map { "$file/$_" } @subfiles;
+            $stats->Add(directories => 1);
+        }
     } else {
         # Here we have a normal file. Compute the suffix.
         my $suffix = '';
