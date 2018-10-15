@@ -67,7 +67,9 @@ for my $module (@modules) {
         }
     }
     # Did we find the desired branch?
-    if ($current eq $branchName) {
+    if (! $current) {
+        print "skipped due to probable remote web.\n";
+    } elsif ($current eq $branchName) {
         print "already switched to $branchName.\n";
     } elsif (! $found) {
         print "does not have $branchName.\n";
