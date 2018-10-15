@@ -47,7 +47,7 @@ if (! $branchName) {
 }
 # Get a list of directories.
 my @modules = map { "$FIG_Config::mod_base/$_" } @FIG_Config::modules;
-push @modules, grep { $_ && -d $_ } ($FIG_Config::proj, "$FIG_Config::mod_base/p3_docs", $FIG_Config::web_dir);
+push @modules, grep { $_ && -d "$_/.git" } ($FIG_Config::proj, "$FIG_Config::mod_base/p3_docs", $FIG_Config::web_dir);
 print scalar(@modules) . " project directories found.\n";
 for my $module (@modules) {
     chdir $module;
