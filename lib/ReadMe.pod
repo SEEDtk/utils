@@ -579,6 +579,7 @@ You will need to use MySQL to create a blank database and provide access to it w
 password-protected user.
 
     CREATE DATABASE seedtk_shrub;
+    CREATE USER 'seed'@'localhost';
     GRANT ALL ON seedtk_shrub.* TO 'seed'@'localhost' IDENTIFIED BY 'dna=fun';
 
 Assuming you use the examples above (and you shouldn't), you would then configure
@@ -595,6 +596,17 @@ database name periodically changes!>
 There is a special name and password combination for accessing the live database from
 a remote computer over VPN. Contact L<Bruce Parrello|mailto:bparrello@figresearch.com>
 for the relevant information.
+
+In newer versions of MySQL, the ability to use the load-data command is curtailed. Set
+the C<local_infile> configuration variable ON. This can be done in the C<my.cnf> file,
+with startup parameters, or using the MySQL Workbench.  You should also insure that your
+character set is some variant of UTF8.
+
+If you are using MySQL 8 or better, you will need to set
+
+    our $default_mysql_engine = "InnoDB";
+
+in your B<FIG_Config.pm> before you load the database.
 
 =head2 Settinig Up a Vanilla Environment without Eclipse
 
