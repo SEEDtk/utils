@@ -31,8 +31,7 @@ package SeedAware;
 =head1 Operating System Access Methods
 
 This package provides methods for accessing the operating system. It is a not quite a drop-in
-replacement for the old SeedAware module from the SEED, as it uses the new L<IPC::Run3> interface
-(which has the advantage of not breaking the debugger).  In addition, it is not prepared to run
+replacement for the old SeedAware module from the SEED.  In addition, it is not prepared to run
 outside the SEEDtk world. At some point in the future, when I'm not under a crushing deadline,
 this can be corrected.
 

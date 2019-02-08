@@ -29,6 +29,8 @@ use File::Copy::Recursive;
 
 =head1 BLAST Interface Module
 
+WARNING:  DUE TO A BUG IN L<IPC::Run3>, all these methods destroy your current position in STDIN.
+
 This library contains methods for calling  C<blastp>,
 C<blastn>, C<blastx>, C<tblastn>. C<psiblast>, and C<rpsblast>.
 
@@ -1451,7 +1453,6 @@ sub valid_fasta
     else
     {
         my $data;
-
         # Literal sequence data?
 
         if ( $seq_src && ( ref($seq_src) eq 'ARRAY' ) )
@@ -1740,7 +1741,6 @@ sub run_blast
             or print STDERR "Failed in require Sim. Consider using outForm => 'hsp'.\n"
                 and return wantarray ? () : [];
     }
-
     my $cmd   = &form_blast_command( $queryF, $dbF, $blast_prog, $parms )
         or warn "BlastInterface::run_blast: Failed to create a blast command."
             and return wantarray ? () : [];
@@ -1750,6 +1750,7 @@ sub run_blast
     }
     my $fh;
     $redir{stdout} = \$fh;
+    $redir{stdin} = $queryF;
     my $rc = &SeedAware::run_redirected( @$cmd, \%redir );
     if ($rc) {
         return wantarray ? () : [];
