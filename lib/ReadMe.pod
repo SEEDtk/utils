@@ -16,6 +16,7 @@ and a B<scripts> subdirectory containing scripts.
             Alexa
             ERDBtk
             SEEDtk
+            p3_code
             RASTtk
             tbltools
             utils
@@ -36,9 +37,12 @@ a directory called B<modules>.
         modules
             Alexa
             ERDBtk
+            SEEDtk
+            p3_code
             RASTtk
             tbltools
             utils
+            Web
 
 In this version there is no B<Web> project. The B<Web> project contains a website you can
 configure on your local host that contains useful documentation and tutorials. This is
@@ -494,6 +498,35 @@ Spreadsheet::ParseExcel
 
 Spreadsheet::XLSX
 
+=item 10
+
+JSON::Rpc::Legacy::Client
+
+=item 11
+
+Statistics::Descriptive
+
+=item 12
+
+FreezeThaw
+
+=item 13
+
+Math::Vector::Real
+
+=item 14
+
+Data::UUID
+
+=item 15
+
+Graph
+
+=item 16
+
+Regexp::Common
+
+
 =back
 
 To install GIT, go to L<https://git-scm.com/download/win>. We also support
@@ -547,6 +580,34 @@ Spreadsheet::ParseExcel
 
 Spreadsheet::XLSX
 
+=item 10
+
+JSON::Rpc::Legacy::Client
+
+=item 11
+
+Statistics::Descriptive
+
+=item 12
+
+FreezeThaw
+
+=item 13
+
+Math::Vector::Real
+
+=item 14
+
+Data::UUID
+
+=item 15
+
+Graph
+
+=item 16
+
+Regexp::Common
+
 =back
 
 If you want to store images in the database, you will need L<GD>.  Currently this is not a big
@@ -579,8 +640,8 @@ You will need to use MySQL to create a blank database and provide access to it w
 password-protected user.
 
     CREATE DATABASE seedtk_shrub;
-    CREATE USER 'seed'@'localhost';
-    GRANT ALL ON seedtk_shrub.* TO 'seed'@'localhost' IDENTIFIED BY 'dna=fun';
+    CREATE USER 'seed'@'localhost' IDENTIFIED WITH mysql_native_password BY 'dna=fun';
+    GRANT ALL ON seedtk_shrub.* TO 'seed'@'localhost';
 
 Assuming you use the examples above (and you shouldn't), you would then configure
 the database name and user information in L<FIG_Config> as follows
@@ -831,9 +892,9 @@ very convenient.
 
 =head2 Loading the Database
 
-All the data in the database is stored in a TAR file at L<ftp://ftp.kbase.us/SEEDtk/reprepo.tar.gz>.
+All the data in the database is stored in a TAR file called C<reprepo.tar.gz>.
 
-Download this file into your data directory. From a command-line prompt within that directory,
+Copy this file into your data directory. From a command-line prompt within that directory,
 do
 
     ShrubLoad --clear --store --tar=reprepo.tar.gz
