@@ -46,10 +46,12 @@ If specified, subdirectories will not be processed recursively.
 =cut
 
 # These constants determine which suffixes require special handling.
-use constant BIN_SUFFIX => { gz => 1, zip => 1, z => 1, xlsx => 1, xls => 1, xlsm => 1, ser => 1 };
-use constant DEL_SUFFIX => { nhr => 1, nin => 1, nsq => 1, phr => 1, pin => 1, psq => 1,
-                             psd => 1, aux => 1, loo => 1, psi => 1, rps => 1 };
-use constant BIN_NAME => { RandomForestClassifier => 1 };
+use constant BIN_SUFFIX => { '.gz' => 1, '.zip' => 1, '.z' => 1, '.xlsx' => 1, '.xls' => 1,
+							'.xlsm' => 1, '.ser' => 1 };
+use constant DEL_SUFFIX => { '.nhr' => 1, '.nin' => 1, '.nsq' => 1, '.phr' => 1, '.pin' => 1,
+							'.psq' => 1, '.psd' => 1, '.aux' => 1, '.loo' => 1, '.psi' => 1,
+							'.rps' => 1 };
+use constant BIN_NAME => { 'RandomForestClassifier' => 1 };
 
 # Get the command-line parameters.
 my $opt = ScriptUtils::Opts('dir',
@@ -87,7 +89,7 @@ while (my $file = shift @files) {
         }
     } else {
         # Here we have a normal file. Compute the suffix and the base name.
-        my ($baseName, $dirs, $suffix) = File::Basename::fileparse($file);
+        my ($baseName, $dirs, $suffix) = File::Basename::fileparse($file, qr/\.[^.]*/);
         # Compute our action.
         if (BIN_NAME->{$baseName} || BIN_SUFFIX->{$suffix}) {
             # Binary file: no action.
