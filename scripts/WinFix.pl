@@ -47,7 +47,8 @@ If specified, subdirectories will not be processed recursively.
 
 # These constants determine which suffixes require special handling.
 use constant BIN_SUFFIX => { '.gz' => 1, '.zip' => 1, '.z' => 1, '.xlsx' => 1, '.xls' => 1,
-                            '.xlsm' => 1, '.ser' => 1, '.jar' => 1 };
+                            '.xlsm' => 1, '.ser' => 1, '.jar' => 1, '.png' => 1, '.gif' => 1,
+                            '.jpg' => 1, '.swg' => 1, '.ico' => 1, '.pdf' => 1 };
 use constant DEL_SUFFIX => { '.nhr' => 1, '.nin' => 1, '.nsq' => 1, '.phr' => 1, '.pin' => 1,
                             '.psq' => 1, '.psd' => 1, '.aux' => 1, '.loo' => 1, '.psi' => 1,
                             '.rps' => 1 };
@@ -90,6 +91,7 @@ while (my $file = shift @files) {
     } else {
         # Here we have a normal file. Compute the suffix and the base name.
         my ($baseName, $dirs, $suffix) = File::Basename::fileparse($file, qr/\.[^.]*/);
+        $suffix = lc $suffix;
         # Compute our action.
         if (BIN_NAME->{$baseName} || BIN_SUFFIX->{$suffix}) {
             # Binary file: no action.
@@ -102,7 +104,10 @@ while (my $file = shift @files) {
             $stats->Add(deleted => 1);
         } else {
             # Normal file: convert.
-            if (! open(my $ih, '<', $file)) {
+            if (! -w $file) {
+                print "CANNOT WRITE $file.\n";
+                $stats->Add(lockedFile => 1);
+            } elsif (! open(my $ih, '<', $file)) {
                 print "COULD NOT OPEN: $!\n";
                 $stats->Add(errors => 1);
             } else {
