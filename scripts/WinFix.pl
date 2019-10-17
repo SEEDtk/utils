@@ -47,10 +47,10 @@ If specified, subdirectories will not be processed recursively.
 
 # These constants determine which suffixes require special handling.
 use constant BIN_SUFFIX => { '.gz' => 1, '.zip' => 1, '.z' => 1, '.xlsx' => 1, '.xls' => 1,
-							'.xlsm' => 1, '.ser' => 1 };
+                            '.xlsm' => 1, '.ser' => 1, '.jar' => 1 };
 use constant DEL_SUFFIX => { '.nhr' => 1, '.nin' => 1, '.nsq' => 1, '.phr' => 1, '.pin' => 1,
-							'.psq' => 1, '.psd' => 1, '.aux' => 1, '.loo' => 1, '.psi' => 1,
-							'.rps' => 1 };
+                            '.psq' => 1, '.psd' => 1, '.aux' => 1, '.loo' => 1, '.psi' => 1,
+                            '.rps' => 1 };
 use constant BIN_NAME => { 'RandomForestClassifier' => 1 };
 
 # Get the command-line parameters.
