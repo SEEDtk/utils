@@ -21,7 +21,7 @@ use strict;
 use warnings;
 use FIG_Config;
 use ScriptUtils;
-use SeedAware;
+use SeedTkRun;
 
 =head1 Run a Tool
 
@@ -39,7 +39,7 @@ The first positional parameter is the tool name. The remaining parameters are pa
 # Get the command.
 my ($cmd, @parms) = @ARGV;
 # Find the command.
-my $cmdPath = SeedAware::executable_for($cmd);
+my $cmdPath = SeedTkRun::executable_for($cmd);
 die "Could not find $cmd." if ! $cmdPath;
 # Windows hack for paths with spaces.
 if ($cmdPath =~ /\s/) {
