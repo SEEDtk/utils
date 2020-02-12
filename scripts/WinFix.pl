@@ -56,7 +56,8 @@ use constant BIN_NAME => { 'RandomForestClassifier' => 1 };
 
 # Get the command-line parameters.
 my $opt = ScriptUtils::Opts('dir',
-        ['shallow', 'do not recurse into directories']
+        ['shallow', 'do not recurse into directories'],
+        ['all', 'fix all files regardless of extensiion'],
         );
 # Get the input directory.
 my ($dir) = @ARGV;
@@ -93,7 +94,7 @@ while (my $file = shift @files) {
         my ($baseName, $dirs, $suffix) = File::Basename::fileparse($file, qr/\.[^.]*/);
         $suffix = lc $suffix;
         # Compute our action.
-        if (BIN_NAME->{$baseName} || BIN_SUFFIX->{$suffix}) {
+        if (! $opt->all && (BIN_NAME->{$baseName} || BIN_SUFFIX->{$suffix})) {
             # Binary file: no action.
             print "binary-- skipped.\n";
             $stats->Add(skipped => 1);
