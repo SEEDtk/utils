@@ -32,11 +32,23 @@ This script updates the Plack server.  The latest code is pulled from GitHub, an
 
 There are currently no parameters.
 
+The following command-line parameters are supported.
+
+=over 4
+
+=item run
+
+If specified, the  named PSGI command will be run.
+
+=back
+
 =cut
 
 $| = 1;
 # Get the command-line parameters.
-my $opt = ScriptUtils::Opts('');
+my $opt = ScriptUtils::Opts('',
+    ["run=s", "if specified, server will be started with the specified command"],
+);
 # Refresh the source files.
 RefreshFiles("Plack");
 # Create the Web_Config.
@@ -56,6 +68,15 @@ print $oh "# log file name\n";
 print $oh "our \$log_file = \"$FIG_Config::data/logs/plack.log\";\n\n";
 close $oh;
 print "All done.\n";
+if ($opt->run) {
+    chdir "$FIG_Config::mod_base/Plack/psgi";
+    my $server = ($FIG_Config::win_mode ? "" : "-s Starman");
+    my $psgi = $opt->run;
+    my $cmd = "plackup -p 5200 -E production $server -- $psgi";
+    my $cwd =  cwd();
+    print "Running server from $cwd: $cmd\n";
+    system($cmd);
+}
 
 ## This refreshes the source files from GIT.
 sub RefreshFiles {
