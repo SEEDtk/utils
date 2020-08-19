@@ -21,6 +21,7 @@ use warnings;
 use FIG_Config;
 use ScriptUtils;
 use Cwd;
+use IPC::Run3;
 
 =head1 Fix Up Plack Server
 
@@ -34,20 +35,11 @@ There are currently no parameters.
 
 The following command-line parameters are supported.
 
-=over 4
-
-=item run
-
-If specified, the  named PSGI command will be run.
-
-=back
-
 =cut
 
 $| = 1;
 # Get the command-line parameters.
 my $opt = ScriptUtils::Opts('',
-    ["run=s", "if specified, server will be started with the specified command"],
 );
 # Refresh the source files.
 RefreshFiles("Plack");
@@ -66,17 +58,19 @@ print $oh "# CoreSEED data directory\n";
 print $oh "our \$core_base = \"$FIG_Config::data/CoreSEED\";\n\n";
 print $oh "# log file name\n";
 print $oh "our \$log_file = \"$FIG_Config::data/logs/plack.log\";\n\n";
-close $oh;
-print "All done.\n";
-if ($opt->run) {
-    chdir "$FIG_Config::mod_base/Plack/psgi";
-    my $server = ($FIG_Config::win_mode ? "" : "-s Starman");
-    my $psgi = $opt->run;
-    my $cmd = "plackup -p 5200 -E production $server -- $psgi";
-    my $cwd =  cwd();
-    print "Running server from $cwd: $cmd\n";
-    system($cmd);
+close $oh; undef $oh;
+# Create the execution script.
+if ($FIG_Config::win_mode) {
+    open($oh, '>', "$FIG_Config::mod_base/utils/scripts/run_plack.cmd") || die "Could not open run_plack: $!";
+    print $oh "\@ECHO OFF\n";
+    print $oh "CD $FIG_Config::mod_base/Plack/psgi\n";
+    print $oh "plackup -p 5200 -E production %1.psgi\n";
+} else {
+    open($oh, '>', "$FIG_Config::proj/bin/run_plack.sh") || die "Could not open run_plack: $!";
+    print $oh "cd $FIG_Config::mod_base/Plack/psgi\n";
+    print $oh "plackup -p 5200 -E production -s Starman \$1.psgi\n";
 }
+print "All done.\n";
 
 ## This refreshes the source files from GIT.
 sub RefreshFiles {
