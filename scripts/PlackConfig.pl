@@ -65,10 +65,13 @@ if ($FIG_Config::win_mode) {
     print $oh "\@ECHO OFF\n";
     print $oh "CD $FIG_Config::mod_base/Plack/psgi\n";
     print $oh "plackup -p 5200 -E production %1.psgi\n";
+    close $oh; undef $oh;
 } else {
     open($oh, '>', "$FIG_Config::proj/bin/run_plack.sh") || die "Could not open run_plack: $!";
     print $oh "cd $FIG_Config::mod_base/Plack/psgi\n";
     print $oh "plackup -p 5200 -E production -s Starman \$1.psgi\n";
+    close $oh; undef $oh;
+    chmod 0775, "$FIG_Config::proj/bin/run_plack.sh";
 }
 print "All done.\n";
 
