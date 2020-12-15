@@ -71,7 +71,7 @@ if ($FIG_Config::win_mode) {
     print $oh "cd $FIG_Config::mod_base/Plack/psgi\n";
     print $oh "plackup -p 5200 -E production -s Starman \$1.psgi\n";
     close $oh; undef $oh;
-    chmod 0775, "$FIG_Config::proj/bin/run_plack.sh";
+    chmod 0775, "$FIG_Config::proj/bin/run_plack";
 }
 print "All done.\n";
 
