@@ -124,12 +124,15 @@ while (my $file = shift @files) {
                 }
                 close $ih;
                 # Write it back out.
-                open(my $oh, '>', $file) || die "Could not open $file for output: $!";
-                for my $line (@lines) {
-                    print $oh $line;
+                if (! open(my $oh, '>', $file)) {
+                    print "Could not open $file for output: $!\n";
+                } else {
+                    for my $line (@lines) {
+                        print $oh $line;
+                    }
+                    print "fixed.\n";
+                    $stats->Add(fixed => 1);
                 }
-                print "fixed.\n";
-                $stats->Add(fixed => 1);
             }
         }
     }
