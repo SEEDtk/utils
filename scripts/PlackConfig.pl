@@ -59,7 +59,7 @@ print $oh "our \$core_base = \"$FIG_Config::data/CoreSEED\";\n\n";
 print $oh "# log file name\n";
 print $oh "our \$log_file = \"$FIG_Config::data/logs/plack.log\";\n\n";
 print $oh "# RNASEQ data directory\n";
-print $oh "our \$log_file = \"$FIG_Config::data/RnaSeq\";\n\n";
+print $oh "our \$rna_base = \"$FIG_Config::data/RnaSeq\";\n\n";
 
 close $oh; undef $oh;
 # Create the execution script.
