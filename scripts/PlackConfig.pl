@@ -35,14 +35,23 @@ There are currently no parameters.
 
 The following command-line parameters are supported.
 
+=over 4
+
+=item nopull
+
+Suppress the git pull (used for testing).
+
 =cut
 
 $| = 1;
 # Get the command-line parameters.
 my $opt = ScriptUtils::Opts('',
+    ["nopull", "suppress git pull"]
 );
 # Refresh the source files.
-RefreshFiles("Plack");
+if (! $opt->nopull) {
+    RefreshFiles("Plack");
+}
 # Create the Web_Config.
 print "Building web_config.\n";
 open(my $oh, '>', "$FIG_Config::mod_base/Plack/psgi/lib/Web_Config.pm") || die "Could not open Web_Config: $!";
@@ -60,6 +69,8 @@ print $oh "# log file name\n";
 print $oh "our \$log_file = \"$FIG_Config::data/logs/plack.log\";\n\n";
 print $oh "# RNASEQ data directory\n";
 print $oh "our \$rna_base = \"$FIG_Config::data/RnaSeq\";\n\n";
+print $oh "# SEEDtk script directories\n";
+print $oh "our \@scripts = (\'" . join("', '", @FIG_Config::scripts) . "');\n\n";
 
 close $oh; undef $oh;
 # Create the execution script.
@@ -100,7 +111,7 @@ sub RefreshFiles {
         # Directory found, refresh it.
         print "Pulling $dir repo.\n";
         chdir $repoDir;
-        my @output = `git pull`;
+        my @output = `git pull --ff-only`;
         if (grep { $_ =~ /conflict/ } @output) {
             die "$dir pull failed.";
         }
