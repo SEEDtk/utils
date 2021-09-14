@@ -43,6 +43,10 @@ The single positional parameter is a directory name. The command-line parameters
 
 If specified, subdirectories will not be processed recursively.
 
+=item perm
+
+Fix the permissions of the files.
+
 =cut
 
 # These constants determine which suffixes require special handling.
@@ -59,6 +63,7 @@ use constant BIN_NAME => { 'RandomForestClassifier' => 1 };
 my $opt = ScriptUtils::Opts('dir',
         ['shallow', 'do not recurse into directories'],
         ['all', 'fix all files regardless of extensiion'],
+        ['perm', 'fix file permissions']
         );
 # Get the input directory.
 my ($dir) = @ARGV;
@@ -78,6 +83,10 @@ while (my $file = shift @files) {
     print "$file: ";
     # Is this a subdirectory?
     if (-d $file) {
+        # Handle permissions.
+        if( $opt->perm) {
+            chmod 0775, $file;
+        }
         # Only proceed if we are deep.
         if ($first || ! $opt->shallow) {
             # Open the directory to get the files.
@@ -91,7 +100,11 @@ while (my $file = shift @files) {
             $first = 0;
         }
     } else {
-        # Here we have a normal file. Compute the suffix and the base name.
+        # Here we have a normal file.  Handle permissions.
+        if ($opt->perm) {
+            chmod 0764, $file;
+        }
+        # Compute the suffix and the base name.
         my ($baseName, $dirs, $suffix) = File::Basename::fileparse($file, qr/\.[^.]*/);
         $suffix = lc $suffix;
         # Compute our action.
